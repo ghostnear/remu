@@ -8,20 +8,24 @@ use CHIP8::Frontends as Frontends;
 mod delta_timer;
 use delta_timer::DeltaTimer as DeltaTimer;
 
+use crossterm::style::Color as Color;
+
 fn main()
 {
-    // This should be disabled in terminal display mode.
+    // Recommended to disable in terminal mode.
     pretty_env_logger::init();
 
     let mut config = CHIP8::Configs::EmulatorConfig::default();
     config.cpu_config.timer.rate = 10000.0;
 
     let mut emulator = CHIP8::Emulator::new(&config);
-    emulator.load("6-keypad.ch8");
+    emulator.load("2-ibm-logo.ch8");
 
     info!("Emulator backend setup completed successfully.");
 
-    let ui_config = Frontends::TerminalFrontendConfig::default();
+    let mut ui_config = Frontends::TerminalFrontendConfig::default();
+    ui_config.foreground = Color::Rgb { r: (0xBB), g: (0xBB), b: (0xBB) };
+    ui_config.background = Color::Rgb { r: (0x11), g: (0x11), b: (0x11) };
     let mut user_interface = Frontends::TerminalFrontend::new(&ui_config);
 
     let mut delta_timer = DeltaTimer::new();

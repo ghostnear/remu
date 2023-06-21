@@ -11,7 +11,8 @@ use crossterm::{
 
 pub struct TerminalFrontendConfig
 {
-
+    pub foreground: Color,
+    pub background: Color
 }
 
 impl TerminalFrontendConfig
@@ -19,13 +20,16 @@ impl TerminalFrontendConfig
     pub fn default() -> Self
     {
         Self {
-
+            foreground: Color::White,
+            background: Color::Black
         }
     }
 }
 
 pub struct TerminalFrontend
 {
+    foreground: Color,
+    background: Color,
     quit: bool
 }
 
@@ -40,6 +44,8 @@ impl TerminalFrontend
         ).unwrap();
 
         Self {
+            foreground: config.foreground,
+            background: config.background,
             quit: false
         }
     }
@@ -73,8 +79,8 @@ impl Frontend for TerminalFrontend
         execute!(
             stdout(),
             cursor::MoveTo(0, 0),
-            SetForegroundColor(Color::White),
-            SetBackgroundColor(Color::Black)
+            SetForegroundColor(self.foreground),
+            SetBackgroundColor(self.background)
         ).unwrap();
 
         // Start building each line.
