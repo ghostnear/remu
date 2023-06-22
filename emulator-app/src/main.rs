@@ -26,10 +26,9 @@ fn main()
     setup_logging();
 
     // Setup emulator.
-    let mut config = CHIP8::Configs::EmulatorConfig::default();
-    config.cpu_config.timer.rate = 1000.0;
+    let config = CHIP8::Configs::EmulatorConfig::default();
     let mut emulator = CHIP8::Emulator::new(&config);
-    emulator.load("roms/CHIP8/Timendus/5-quirks.ch8");
+    emulator.load("roms/CHIP8/Timendus/6-keypad.ch8");
 
     info!("Emulator backend setup completed successfully.");
 

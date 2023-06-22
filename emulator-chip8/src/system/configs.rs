@@ -36,7 +36,7 @@ impl CPUConfig
     {
         Self {
             timer: TimerConfig {
-                rate: 100.0
+                rate: 1000.0
             }
         }
     }

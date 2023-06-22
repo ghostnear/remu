@@ -13,6 +13,8 @@ pub struct CPU
 
     halt_flag: bool,
 
+    vsync: Components::Timer,
+
     timer: Components::Timer
 }
 
@@ -27,6 +29,9 @@ impl CPU
             stack_ptr: 0,
             stack: [0; 16],
             timer: Components::Timer::new(&config.timer),
+            vsync: Components::Timer::new(&Configs::TimerConfig {
+                rate: 60.0
+            }),
             halt_flag: false
         }
     }
@@ -154,16 +159,19 @@ impl CPU
             // OR Vx, Vy
             (0x8, _, _, 0x1) => {
                 self.reg[nibbles.1 as usize] |= self.reg[nibbles.2 as usize];
+                self.reg[0xF] = 0
             }
 
             // AND Vx, Vy
             (0x8, _, _, 0x2) => {
                 self.reg[nibbles.1 as usize] &= self.reg[nibbles.2 as usize];
+                self.reg[0xF] = 0
             }
 
             // XOR Vx, Vy
             (0x8, _, _, 0x3) => {
                 self.reg[nibbles.1 as usize] ^= self.reg[nibbles.2 as usize];
+                self.reg[0xF] = 0
             }
 
             // ADC, Vx, Vy
@@ -182,8 +190,8 @@ impl CPU
 
             // SHR, Vx
             (0x8, _, _, 0x6) => {
-                let overflow = self.reg[nibbles.1 as usize] & 0x1;
-                self.reg[nibbles.1 as usize] >>= 1;
+                let overflow = self.reg[nibbles.2 as usize] & 0x1;
+                self.reg[nibbles.1 as usize] = self.reg[nibbles.2 as usize] >> 1;
                 self.reg[0xF] = overflow;
             }
 
@@ -196,8 +204,8 @@ impl CPU
 
             // SHL, Vx
             (0x8, _, _, 0xE) => {
-                let overflow = (self.reg[nibbles.1 as usize] & 0x80) >> 7;
-                self.reg[nibbles.1 as usize] <<= 1;
+                let overflow = (self.reg[nibbles.2 as usize] & 0x80) >> 7;
+                self.reg[nibbles.1 as usize] = self.reg[nibbles.2 as usize] << 1;
                 self.reg[0xF] = overflow;
             }
 
@@ -221,10 +229,17 @@ impl CPU
 
             // DRW X, Y, n
             (0xD, _, _, _) => {
+                if self.vsync.get() != 0
+                {
+                    self.pc -= 2;
+                    return;
+                }
+                
+                self.vsync.set(1);
                 display.set_flag();
 
-                let x = self.reg[nibbles.1 as usize];
-                let y = self.reg[nibbles.2 as usize];
+                let x = self.reg[nibbles.1 as usize] % 64;
+                let y = self.reg[nibbles.2 as usize] % 32;
                 let n = nibbles.3;
 
                 let mut collision = false;
@@ -266,8 +281,7 @@ impl CPU
             }
 
             // KEY Vx
-            (0xF, _, 0x0, 0xA) =>
-            {
+            (0xF, _, 0x0, 0xA) => {
                 self.pc -= 2;
 
                 for i in 0..16
@@ -309,17 +323,19 @@ impl CPU
 
             // LD, [I], Vx
             (0xF, _, 0x5, 0x5) => {
-                for i in 0..nibbles.1 + 1
+                for index in 0..nibbles.1 + 1
                 {
-                    ram.write_byte((self.index + i) as usize, self.reg[i as usize]);
+                    ram.write_byte(self.index as usize, self.reg[index as usize]);
+                    self.index += 1;
                 }
             }
 
             // LD, Vx, [I]
             (0xF, _, 0x6, 0x5) => {
-                for i in 0..nibbles.1 + 1
+                for index in 0..nibbles.1 + 1
                 {
-                    self.reg[i as usize] = ram.read_byte((self.index + i) as usize);
+                    self.reg[index as usize] = ram.read_byte(self.index as usize);
+                    self.index += 1;
                 }
             }
 
@@ -333,6 +349,7 @@ impl CPU
     pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta_timer: &mut Components::Timer, delta: f64)
     {
         self.timer.update(delta);
+        self.vsync.update(delta);
         
         // We are ready to execute the opcode.
         if self.timer.get() == 0
