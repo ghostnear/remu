@@ -5,7 +5,7 @@ use std::time::Duration;
 use crate::Frontend as Frontend;
 
 use crossterm::event::{KeyModifiers, PopKeyboardEnhancementFlags};
-use crossterm::terminal::{enable_raw_mode, disable_raw_mode};
+use crossterm::terminal::{enable_raw_mode, disable_raw_mode, SetTitle};
 use crossterm::{
     execute,
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
@@ -69,7 +69,8 @@ impl TerminalFrontend
             stdout(),
             Clear(ClearType::All),
             cursor::Hide,
-            PushKeyboardEnhancementFlags(KeyboardEnhancementFlags::REPORT_EVENT_TYPES)
+            PushKeyboardEnhancementFlags(KeyboardEnhancementFlags::REPORT_EVENT_TYPES),
+            SetTitle("remu CHIP-8")
         ).unwrap();
 
         enable_raw_mode().unwrap();
