@@ -75,7 +75,7 @@ impl CPU
     }
 
     #[inline]
-    pub fn step(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta: &mut Components::Timer)
+    pub fn step(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta: &mut Components::Timer, sound: &mut Components::Timer)
     {
         let opcode = ram.read_word(self.pc);
         self.pc += 2;
@@ -227,6 +227,12 @@ impl CPU
                 self.pc = (opcode & 0xFFF) + self.reg[0] as u16;
             }
 
+            // RND Vx, NN
+            (0xC, _, _, _) => {
+                let random: u8 = rand::random();
+                self.reg[nibbles.1 as usize] = random & (opcode & 0xFF) as u8;
+            }
+
             // DRW X, Y, n
             (0xD, _, _, _) => {
                 if self.vsync.get() != 0
@@ -306,9 +312,19 @@ impl CPU
                 delta.set(self.reg[nibbles.1 as usize]);
             }
 
+            // LD ST, Vx
+            (0xF, _, 0x1, 0x8) => {
+                sound.set(self.reg[nibbles.1 as usize]);
+            }
+
             // ADD I, Vx
             (0xF, _, 0x1, 0xE) => {
                 self.index += self.reg[nibbles.1 as usize] as u16;
+            }
+
+            // DIG Vx, I
+            (0xF, _, 0x2, 0x9) => {
+                self.index = self.reg[nibbles.1 as usize] as u16 * 5;
             }
 
             // LDB, Vx
@@ -346,7 +362,7 @@ impl CPU
         }
     }
 
-    pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta_timer: &mut Components::Timer, delta: f64)
+    pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta_timer: &mut Components::Timer, sound_timer: &mut Components::Timer, delta: f64)
     {
         self.timer.update(delta);
         self.vsync.update(delta);
@@ -355,7 +371,7 @@ impl CPU
         if self.timer.get() == 0
         {
             self.timer.set(1);
-            self.step(ram, display, keyboard, delta_timer);
+            self.step(ram, display, keyboard, delta_timer, sound_timer);
         }
     }
 

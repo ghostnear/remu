@@ -24,6 +24,9 @@ impl Display
             result.memory[index] = rand::random::<u8>();
         }
 
+        // TODO: temporary
+        result.clear();
+
         return result;
     }
 

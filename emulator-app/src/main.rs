@@ -28,7 +28,7 @@ fn main()
     // Setup emulator.
     let config = CHIP8::Configs::EmulatorConfig::default();
     let mut emulator = CHIP8::Emulator::new(&config);
-    emulator.load("roms/CHIP8/Timendus/6-keypad.ch8");
+    emulator.load("roms/CHIP8/games/Pong (1 player).ch8");
 
     info!("Emulator backend setup completed successfully.");
 

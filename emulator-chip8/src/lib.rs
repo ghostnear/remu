@@ -121,7 +121,7 @@ impl Emulator
         self.sound.update(delta);
         self.delta.update(delta);
         
-        self.cpu.update(&mut self.ram, &mut self.display, &mut self.keyboard, &mut self.delta, delta);
+        self.cpu.update(&mut self.ram, &mut self.display, &mut self.keyboard, &mut self.delta, &mut self.sound, delta);
     }
 
 }
