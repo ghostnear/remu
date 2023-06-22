@@ -62,6 +62,18 @@ impl Emulator
     }
 
     #[inline]
+    pub fn release_key(&mut self, key: u8)
+    {
+        if key >= 16
+        {
+            error!("Invalid key: {}", key);
+            panic!("Invalid key: {}", key);
+        }
+
+        self.keyboard.release(key);
+    }
+
+    #[inline]
     pub fn is_running(&self) -> bool
     {
         return !self.cpu.halted();
@@ -71,8 +83,11 @@ impl Emulator
     pub fn load(&mut self, path: &str)
     {
         let mut rom = std::fs::File::open(path).expect("Unable to open ROM for loading!");
+
         let mut buffer : Vec<u8> = Vec::new();
         rom.read_to_end(&mut buffer).unwrap();
+        info!("Read ROM from path: {}", path);
+
         self.ram.load_rom_data(&mut buffer);
     }
 

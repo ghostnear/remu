@@ -17,7 +17,7 @@ fn setup_logging()
     let env = Env::default()
         .filter_or("MY_LOG_LEVEL", "trace")
         .write_style_or("MY_LOG_STYLE", "always");
-    let file = OpenOptions::new().create(true).write(true).open("last.log").unwrap();
+    let file = OpenOptions::new().create(true).write(true).truncate(true).open("last.log").unwrap();
     Builder::from_env(env).target(Target::Pipe(Box::new(file))).init();
 }
 
@@ -26,7 +26,8 @@ fn main()
     setup_logging();
 
     // Setup emulator.
-    let config = CHIP8::Configs::EmulatorConfig::default();
+    let mut config = CHIP8::Configs::EmulatorConfig::default();
+    config.cpu_config.timer.rate = 1000.0;
     let mut emulator = CHIP8::Emulator::new(&config);
     emulator.load("roms/6-keypad.ch8");
 
@@ -46,9 +47,9 @@ fn main()
     {
         delta_timer.update();
 
+        user_interface.update(&mut emulator, delta_timer.get());
         emulator.update(delta_timer.get());
-        user_interface.update(&emulator, delta_timer.get());
-
+        
         user_interface.draw(&mut emulator);
     }
 }

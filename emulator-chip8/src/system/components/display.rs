@@ -53,13 +53,7 @@ impl Display
     #[inline]
     pub fn set_pixel(&mut self, x: u8, y: u8, value: bool) -> bool
     {
-        if x >= self.width || y >= self.height
-        {
-            return false;
-        }
-
-        // Set only if the value is set, every 0 pixel from the sprite is considered transparent.
-        if !value
+        if x >= self.width || y >= self.height || !value
         {
             return false;
         }
@@ -69,7 +63,7 @@ impl Display
 
         let old_value = (self.memory[index] >> bit) & 1 == 1;
 
-        self.memory[index] |= 1 << bit;
+        self.memory[index] ^= 1 << bit;
 
         return old_value;
     }

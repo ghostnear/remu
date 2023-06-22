@@ -29,4 +29,13 @@ impl Keyboard
 
         self.keys[index as usize] |= 1 << bit;
     }
+    
+    #[inline]
+    pub fn release(&mut self, key: u8)
+    {
+        let index = key / 8;
+        let bit = key % 8;
+
+        self.keys[index as usize] &= !(1 << bit);
+    }
 }
