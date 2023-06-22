@@ -1,6 +1,7 @@
 pub struct Keyboard
 {
-    keys: [u8; 2]
+    keys: [u8; 2],
+    halting: bool
 }
 
 impl Keyboard
@@ -8,7 +9,8 @@ impl Keyboard
     pub fn new() -> Self
     {
         Self {
-            keys: [0; 2]
+            keys: [0; 2],
+            halting: false
         }
     }
 
@@ -37,5 +39,23 @@ impl Keyboard
         let bit = key % 8;
 
         self.keys[index as usize] &= !(1 << bit);
+    }
+
+    #[inline]
+    pub fn halt(&mut self)
+    {
+        self.halting = true;
+    }
+
+    #[inline]
+    pub fn resume(&mut self)
+    {
+        self.halting = false;
+    }
+
+    #[inline]
+    pub fn halted(&self) -> bool
+    {
+        return self.halting;
     }
 }

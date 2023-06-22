@@ -214,6 +214,11 @@ impl CPU
                 self.index = opcode & 0xFFF;
             }
 
+            // JP V0, NNN
+            (0xB, _, _, _) => {
+                self.pc = (opcode & 0xFFF) + self.reg[0] as u16;
+            }
+
             // DRW X, Y, n
             (0xD, _, _, _) => {
                 display.set_flag();
@@ -258,6 +263,28 @@ impl CPU
             // LD Vx, DT
             (0xF, _, 0x0, 0x7) => {
                 self.reg[nibbles.1 as usize] = delta.get();
+            }
+
+            // KEY Vx
+            (0xF, _, 0x0, 0xA) =>
+            {
+                self.pc -= 2;
+
+                for i in 0..16
+                {
+                    if keyboard.is_pressed(i)
+                    {
+                        self.reg[nibbles.1 as usize] = i as u8;
+                        keyboard.halt();
+                        break;
+                    }
+                }
+
+                if keyboard.halted() && !keyboard.is_pressed(self.reg[nibbles.1 as usize])
+                {
+                    keyboard.resume();
+                    self.pc += 2;
+                }
             }
 
             // LD DT, Vx
