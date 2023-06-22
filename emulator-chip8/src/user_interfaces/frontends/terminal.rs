@@ -1,12 +1,17 @@
-use std::io::{stdout};
+use std::io::{stdout, Write};
+
+use std::time::Duration;
 
 use crate::Frontend as Frontend;
 
+use crossterm::event::KeyModifiers;
+use crossterm::terminal::{enable_raw_mode, disable_raw_mode};
 use crossterm::{
     execute,
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
     terminal::{Clear, ClearType},
     cursor,
+    event::{poll, read, Event, KeyCode}
 };
 
 pub struct TerminalFrontendConfig
@@ -40,14 +45,28 @@ impl TerminalFrontend
         execute!(
             stdout(),
             Clear(ClearType::All),
-            cursor::Hide
+            cursor::Hide,
         ).unwrap();
+
+        enable_raw_mode().unwrap();
 
         Self {
             foreground: config.foreground,
             background: config.background,
             quit: false
         }
+    }
+
+    fn exit(&mut self)
+    {
+        self.quit = true;
+
+        disable_raw_mode().unwrap();
+
+        execute!(
+            stdout(),
+            cursor::Show
+        ).unwrap();
     }
 }
 
@@ -58,13 +77,31 @@ impl Frontend for TerminalFrontend
         if !emulator.is_running()
         {
             info!("Backend has stopped running, closing app...");
-            self.quit = true;
-
-            execute!(
-                stdout(),
-                cursor::Show
-            ).unwrap();
+            self.exit();
+            return;
         }
+
+        if poll(Duration::from_millis(1)).unwrap() {
+
+            // Read the input.
+            match read().unwrap()
+            {
+                Event::Key(event) =>
+                {
+                    // CTRL + C / CTRL + Z / Escape to close the app.
+                    if (event.modifiers == KeyModifiers::CONTROL && (event.code == KeyCode::Char('c') || event.code == KeyCode::Char('z'))) || event.code == KeyCode::Esc
+                    {
+                        info!("Closing on user request...");
+                        self.exit();
+                        return;
+                    }
+
+                    trace!("{:?}", event);
+                }
+                _ => {}
+            }
+        }
+
     }
 
     fn draw(&mut self, emulator:&mut crate::Emulator)
@@ -116,6 +153,8 @@ impl Frontend for TerminalFrontend
             stdout(),
             ResetColor
         ).unwrap();
+
+        stdout().flush().unwrap();
     }
 
     #[inline]

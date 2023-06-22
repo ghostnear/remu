@@ -34,12 +34,14 @@ impl Timer
         }
     }
 
+    #[inline]
     pub fn set(&mut self, value: u8)
     {
         self.value = value;
     }
 
-    pub fn value(&self) -> u8
+    #[inline]
+    pub fn get(&self) -> u8
     {
         return self.value;
     }

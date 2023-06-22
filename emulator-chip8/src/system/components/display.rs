@@ -1,4 +1,3 @@
-use rand::{Rng};
 use crate::Configs as Configs;
 
 pub struct Display
@@ -20,9 +19,9 @@ impl Display
             draw_flag: true
         };
 
-        for i in 0..(config.width as usize * config.height as usize) / 8
+        for index in 0..(config.width as usize * config.height as usize) / 8
         {
-            result.memory[i] = rand::random::<u8>();
+            result.memory[index] = rand::random::<u8>();
         }
 
         return result;
@@ -31,9 +30,9 @@ impl Display
     #[inline]
     pub fn clear(&mut self)
     {
-        for i in 0..self.memory.len()
+        for index in 0..self.memory.len()
         {
-            self.memory[i] = 0;
+            self.memory[index] = 0;
         }
     }
 
@@ -59,25 +58,20 @@ impl Display
             return false;
         }
 
+        // Set only if the value is set, every 0 pixel from the sprite is considered transparent.
+        if !value
+        {
+            return false;
+        }
+
         let index = (y as usize * self.width as usize + x as usize) / 8;
         let bit = 7 - (x % 8);
 
         let old_value = (self.memory[index] >> bit) & 1 == 1;
 
-        if value
-        {
-            self.memory[index] |= 1 << bit;
-        }
-        else
-        {
-            self.memory[index] &= !(1 << bit);
-        }
+        self.memory[index] |= 1 << bit;
 
-        if old_value && value
-        {
-            return true;
-        }
-        return false;
+        return old_value;
     }
 
     #[inline]
@@ -91,7 +85,6 @@ impl Display
     {
         return self.height;
     }
-
 
     #[inline]
     pub fn set_flag(&mut self)

@@ -1,3 +1,9 @@
+# Rust stuff.
 target/
 *.lock
+
+# ROMs.
 *.ch8
+
+# Logs
+*.log

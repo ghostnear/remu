@@ -50,6 +50,18 @@ impl Emulator
     }
 
     #[inline]
+    pub fn press_key(&mut self, key: u8)
+    {
+        if key >= 16
+        {
+            error!("Invalid key: {}", key);
+            panic!("Invalid key: {}", key);
+        }
+
+        self.keyboard.press(key);
+    }
+
+    #[inline]
     pub fn is_running(&self) -> bool
     {
         return !self.cpu.halted();
@@ -94,7 +106,7 @@ impl Emulator
         self.sound.update(delta);
         self.delta.update(delta);
         
-        self.cpu.update(&mut self.ram, &mut self.display, delta);
+        self.cpu.update(&mut self.ram, &mut self.display, &mut self.keyboard, &mut self.delta, delta);
     }
 
 }

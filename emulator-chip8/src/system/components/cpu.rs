@@ -70,7 +70,7 @@ impl CPU
     }
 
     #[inline]
-    pub fn step(&mut self, ram: &mut Components::RAM, display: &mut Components::Display)
+    pub fn step(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta: &mut Components::Timer)
     {
         let opcode = ram.read_word(self.pc);
         self.pc += 2;
@@ -239,6 +239,32 @@ impl CPU
                 self.reg[0xF] = collision as u8;
             }
 
+            // SKP Vx
+            (0xE, _, 0x9, 0xE) => {
+                if keyboard.is_pressed(self.reg[nibbles.1 as usize])
+                {
+                    self.pc += 2;
+                }
+            }
+
+            // SKNP Vx,
+            (0xE, _, 0xA, 0x1) => {
+                if !keyboard.is_pressed(self.reg[nibbles.1 as usize])
+                {
+                    self.pc += 2;
+                }
+            }
+
+            // LD Vx, DT
+            (0xF, _, 0x0, 0x7) => {
+                self.reg[nibbles.1 as usize] = delta.get();
+            }
+
+            // LD DT, Vx
+            (0xF, _, 0x1, 0x5) => {
+                delta.set(self.reg[nibbles.1 as usize]);
+            }
+
             // ADD I, Vx
             (0xF, _, 0x1, 0xE) => {
                 self.index += self.reg[nibbles.1 as usize] as u16;
@@ -277,15 +303,15 @@ impl CPU
         }
     }
 
-    pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, delta: f64)
+    pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta_timer: &mut Components::Timer, delta: f64)
     {
         self.timer.update(delta);
         
         // We are ready to execute the opcode.
-        if self.timer.value() == 0
+        if self.timer.get() == 0
         {
             self.timer.set(1);
-            self.step(ram, display);
+            self.step(ram, display, keyboard, delta_timer);
         }
     }
 
