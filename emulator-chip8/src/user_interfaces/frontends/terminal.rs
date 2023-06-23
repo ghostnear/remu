@@ -30,23 +30,11 @@ impl TerminalFrontendConfig
             bindings: Vec::new()
         };
 
-        // TODO: maybe not like this lol.
-        result.bindings.push((KeyCode::Char('x'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('1'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('2'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('3'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('q'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('w'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('e'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('a'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('s'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('d'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('z'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('c'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('4'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('r'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('f'), KeyModifiers::NONE));
-        result.bindings.push((KeyCode::Char('v'), KeyModifiers::NONE));
+        // Make sure the bindings are not set.
+        for _ in 0..0x10
+        {
+            result.bindings.push((KeyCode::Char('\0'), KeyModifiers::NONE));
+        }
 
         return result;
     }
@@ -54,7 +42,8 @@ impl TerminalFrontendConfig
     pub fn from_json(data: &Value) -> Self
     {
         let mut result = Self::default();
-        info!("data: {:?}", data);
+        
+        // Change the defaults if they are changed in the config.
         result.foreground = Color::Rgb {
             r: data["foreground"]["r"].as_u64().unwrap_or(255) as u8,
             g: data["foreground"]["g"].as_u64().unwrap_or(255) as u8,
@@ -65,6 +54,25 @@ impl TerminalFrontendConfig
             g: data["background"]["g"].as_u64().unwrap_or(0) as u8,
             b: data["background"]["b"].as_u64().unwrap_or(0) as u8
         };
+
+        // Set the bindings.
+        let keys = data["keys"].as_array().unwrap();
+        let modifiers = data["keys_modifiers"].as_array().unwrap();
+
+        for index in 0..0x10
+        {
+            result.bindings[index] = (
+                KeyCode::Char(keys[index].as_str().unwrap_or("0").chars().next().unwrap_or('0')),
+                match modifiers[index].as_str().unwrap_or("NONE")
+                {
+                    "NONE" => KeyModifiers::NONE,
+                    "SHIFT" => KeyModifiers::SHIFT,
+                    "CONTROL" => KeyModifiers::CONTROL,
+                    "ALT" => KeyModifiers::ALT,
+                    _ => KeyModifiers::NONE
+                }
+            );
+        }
 
         return result;
     }

@@ -26,11 +26,15 @@ impl EmulatorConfig
         }
     }
 
-    pub fn from_json(_data: &Value) -> Self
+    pub fn from_json(data: &Value) -> Self
     {
-        let mut _result = Self::default();
+        let mut result = Self::default();
 
-        return _result;
+        // Change the defaults if they are changed in the config.
+        result.cpu_config.timer.rate = data["instruction_rate"].as_f64().unwrap_or(result.cpu_config.timer.rate);
+        result.ram_config.start = data["loading_address"].as_u64().unwrap_or(result.ram_config.start as u64) as usize;
+
+        return result;
     }
 }
 

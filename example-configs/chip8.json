@@ -20,7 +20,30 @@
                 "r": 187,
                 "g": 187,
                 "b": 187
-            }
+            },
+            "keys":
+            [
+                "x",
+                "1", "2", "3",
+                "q", "w", "e",
+                "a", "s", "d",
+                "z", "c",
+                "4", "r", "f", "v"
+            ],
+            "keys_modifiers": [
+                "NONE",
+                "NONE", "NONE", "NONE",
+                "NONE", "NONE", "NONE",
+                "NONE", "NONE", "NONE",
+                "NONE", "NONE",
+                "NONE", "NONE", "NONE", "NONE"
+            ]
+        },
+
+        "backend_config":
+        {
+            "instruction_rate": 1000.0,
+            "loading_address": 512
         }
     },
 
