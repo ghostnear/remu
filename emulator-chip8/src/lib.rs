@@ -3,8 +3,7 @@ pub use crate::system::configs as Configs;
 pub use crate::system::components as Components;
 
 mod user_interfaces;
-pub use crate::user_interfaces::Frontend as Frontend;
-pub use crate::user_interfaces::Frontends as Frontends;
+pub use crate::user_interfaces::{Frontend, Frontends};
 
 use std::io::Read;
 
@@ -35,6 +34,12 @@ impl Emulator
         };
         result.cpu.set_pc(config.ram_config.start as u16);
         return result;
+    }
+
+    #[inline]
+    pub fn get_sound_timer(&self) -> u8
+    {
+        return self.sound.get();
     }
 
     #[inline]

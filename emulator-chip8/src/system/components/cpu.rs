@@ -1,5 +1,4 @@
-use crate::Configs as Configs;
-use crate::Components as Components;
+use crate::{Configs, Components};
 
 pub struct CPU
 {
@@ -90,14 +89,14 @@ impl CPU
 
         match nibbles
         {
-            // RET
-            (0x0, 0x0, 0xE, 0xE) => {
-                self.pc = self.pop_stack();
-            }
-
             // CLS
             (0x0, 0x0, 0xE, 0x0) => {
                 display.clear();
+            }
+
+            // RET
+            (0x0, 0x0, 0xE, 0xE) => {
+                self.pc = self.pop_stack();
             }
 
             // JP NNN
@@ -141,7 +140,7 @@ impl CPU
                 }
             }
 
-            // Vx = KK
+            // LD, Vx, KK
             (0x6, _, _, _) => {
                 self.reg[nibbles.1 as usize] = (opcode & 0xFF) as u8;
             }

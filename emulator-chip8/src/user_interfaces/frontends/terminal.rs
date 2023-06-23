@@ -1,17 +1,16 @@
 use std::io::{stdout, Write};
-
 use std::time::Duration;
 
-use crate::Frontend as Frontend;
+use crate::Frontend;
 
-use crossterm::event::{KeyModifiers, PopKeyboardEnhancementFlags};
-use crossterm::terminal::{enable_raw_mode, disable_raw_mode, SetTitle};
+use serde_json::Value;
+
 use crossterm::{
-    execute,
+    execute, queue,
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
-    terminal::{Clear, ClearType},
+    terminal::{Clear, ClearType, enable_raw_mode, disable_raw_mode, SetTitle},
     cursor,
-    event::{poll, read, Event, KeyCode, KeyEventKind, PushKeyboardEnhancementFlags, KeyboardEnhancementFlags}
+    event::{poll, read, Event, KeyCode, KeyEventKind, KeyModifiers, PushKeyboardEnhancementFlags, PopKeyboardEnhancementFlags, KeyboardEnhancementFlags}
 };
 
 pub struct TerminalFrontendConfig
@@ -48,6 +47,24 @@ impl TerminalFrontendConfig
         result.bindings.push((KeyCode::Char('r'), KeyModifiers::NONE));
         result.bindings.push((KeyCode::Char('f'), KeyModifiers::NONE));
         result.bindings.push((KeyCode::Char('v'), KeyModifiers::NONE));
+
+        return result;
+    }
+
+    pub fn from_json(data: &Value) -> Self
+    {
+        let mut result = Self::default();
+        info!("data: {:?}", data);
+        result.foreground = Color::Rgb {
+            r: data["foreground"]["r"].as_u64().unwrap_or(255) as u8,
+            g: data["foreground"]["g"].as_u64().unwrap_or(255) as u8,
+            b: data["foreground"]["b"].as_u64().unwrap_or(255) as u8
+        };
+        result.background = Color::Rgb {
+            r: data["background"]["r"].as_u64().unwrap_or(0) as u8,
+            g: data["background"]["g"].as_u64().unwrap_or(0) as u8,
+            b: data["background"]["b"].as_u64().unwrap_or(0) as u8
+        };
 
         return result;
     }
@@ -108,6 +125,11 @@ impl Frontend for TerminalFrontend
             return;
         }
 
+        if emulator.get_sound_timer() > 0
+        {
+            print!("{}", '\x07');
+        }
+
         if poll(Duration::from_millis(1)).unwrap()
         {
             // Read the input.
@@ -152,7 +174,7 @@ impl Frontend for TerminalFrontend
 
         emulator.reset_draw_flag();
 
-        execute!(
+        queue!(
             stdout(),
             cursor::MoveTo(0, 0),
             SetForegroundColor(self.foreground),
@@ -181,14 +203,14 @@ impl Frontend for TerminalFrontend
             }
 
             // Print the line.
-            execute!(
+            queue!(
                 stdout(),
                 Print(line),
                 cursor::MoveToNextLine(1)
             ).unwrap();
         }
 
-        execute!(
+        queue!(
             stdout(),
             ResetColor
         ).unwrap();

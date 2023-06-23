@@ -1,4 +1,4 @@
-use crate::Configs as Configs;
+use crate::Configs;
 
 pub struct Display
 {
@@ -24,7 +24,7 @@ impl Display
             result.memory[index] = rand::random::<u8>();
         }
 
-        // TODO: temporary
+        // TODO: temporary?
         result.clear();
 
         return result;

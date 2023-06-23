@@ -5,50 +5,99 @@ use std::fs::OpenOptions;
 
 use emulator_chip8 as CHIP8;
 use CHIP8::Frontend as Frontend;
-use CHIP8::Frontends as Frontends;
 
 mod delta_timer;
-use delta_timer::DeltaTimer as DeltaTimer;
+use delta_timer::DeltaTimer;
 
-use crossterm::style::Color as Color;
+extern crate serde_json;
+use serde_json::Value;
 
-fn setup_logging()
+fn setup_logging(extensive_logging: bool)
 {
+    let mut log_level = "trace";
+    if !extensive_logging
+    {
+        log_level = "warn";
+    }
+
     let env = Env::default()
-        .filter_or("MY_LOG_LEVEL", "trace")
+        .filter_or("MY_LOG_LEVEL", log_level)
         .write_style_or("MY_LOG_STYLE", "always");
+
     let file = OpenOptions::new().create(true).write(true).truncate(true).open("last.log").unwrap();
     Builder::from_env(env).target(Target::Pipe(Box::new(file))).init();
 }
 
-fn main()
+fn setup_chip8(platform: &Value)
 {
-    setup_logging();
-
     // Setup emulator.
-    let config = CHIP8::Configs::EmulatorConfig::default();
+    let config = CHIP8::Configs::EmulatorConfig::from_json(&platform["backend_config"]);
     let mut emulator = CHIP8::Emulator::new(&config);
-    emulator.load("roms/CHIP8/games/Pong (1 player).ch8");
+    emulator.load(platform["rom"].as_str().unwrap_or("none"));
 
     info!("Emulator backend setup completed successfully.");
 
     // UI setup.
-    let mut ui_config = Frontends::TerminalFrontendConfig::default();
-    ui_config.foreground = Color::Rgb { r: (0xBB), g: (0xBB), b: (0xBB) };
-    ui_config.background = Color::Rgb { r: (0x11), g: (0x11), b: (0x11) };
-    let mut user_interface = Frontends::TerminalFrontend::new(&ui_config);
-
-    // Delta timing.
     let mut delta_timer = DeltaTimer::new();
-
-    // Main loop of the app.
-    while !user_interface.has_quit()
+    match platform["frontend"].as_str().unwrap_or("none")
     {
-        delta_timer.update();
+        "terminal" => {
+            
+            let ui_config = CHIP8::Frontends::TerminalFrontendConfig::from_json(&platform["frontend_config"]);
+            let mut user_interface = CHIP8::Frontends::TerminalFrontend::new(&ui_config);
 
-        user_interface.update(&mut emulator, delta_timer.get());
-        emulator.update(delta_timer.get());
+            // Main loop of the app.
+            while !user_interface.has_quit()
+            {
+                delta_timer.update();
+
+                user_interface.update(&mut emulator, delta_timer.get());
+                emulator.update(delta_timer.get());
+                
+                user_interface.draw(&mut emulator);
+            }
+        },
         
-        user_interface.draw(&mut emulator);
+        _ => {
+            error!("Invalid CHIP8 frontend specified!");
+            panic!("Invalid CHIP8 frontend specified!");
+        }
     }
+}
+
+fn setup_emulator(platform: &Value)
+{
+    let name = platform["name"].as_str().unwrap_or("none");
+
+    match name
+    {
+        "CHIP8" => {
+            setup_chip8(platform);
+        },
+
+        _ => {
+            error!("Invalid platform specified: {}!", name);
+            panic!("Invalid platform specified: {}!", name);
+        }
+    }
+}
+
+fn main()
+{
+    let arguments = std::env::args().nth(1);
+    if arguments.is_none()
+    {
+        println!("No config file specified!");
+        return;
+    }
+
+    let config_path = arguments.unwrap();
+    let argument_data = std::fs::read_to_string(config_path.clone()).expect("Could not read config file!");
+    let json_data: Value = serde_json::from_str(&argument_data).unwrap();
+
+    setup_logging(json_data["extensive_logging"].as_bool().unwrap_or(false));
+
+    info!("Used config from path {}.", config_path.clone());
+
+    setup_emulator(&json_data["platform"]);
 }

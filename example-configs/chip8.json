@@ -1,0 +1,28 @@
+{
+    "platform":
+    {
+
+        "name": "CHIP8",
+        "rom": "roms/CHIP8/games/Tetris [Fran Dachille, 1991].ch8",
+
+        "frontend": "terminal",
+
+        "frontend_config":
+        {
+            "background":
+            {
+                "r": 17,
+                "g": 17,
+                "b": 17
+            },
+            "foreground":
+            {
+                "r": 187,
+                "g": 187,
+                "b": 187
+            }
+        }
+    },
+
+    "extensive_logging": true
+}

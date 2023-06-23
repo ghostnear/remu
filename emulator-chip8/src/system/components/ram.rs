@@ -1,4 +1,4 @@
-use crate::Configs as Configs;
+use crate::Configs;
 
 const FONTSET_SIZE: usize = 80;
 

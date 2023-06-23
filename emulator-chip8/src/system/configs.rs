@@ -1,3 +1,5 @@
+use serde_json::Value;
+
 pub struct EmulatorConfig
 {
     pub ram_config: RAMConfig,
@@ -22,6 +24,13 @@ impl EmulatorConfig
                 rate: 60.0
             }
         }
+    }
+
+    pub fn from_json(_data: &Value) -> Self
+    {
+        let mut _result = Self::default();
+
+        return _result;
     }
 }
 
