@@ -1,0 +1,18 @@
+{
+    "platform":
+    {
+
+        "name": "BytePusher",
+        "rom": "roms/BytePusher/Palette Test.BytePusher",
+
+        "frontend_config":
+        {
+        },
+
+        "backend_config":
+        {
+        }
+    },
+
+    "extensive_logging": true
+}

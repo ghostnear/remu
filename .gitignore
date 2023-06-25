@@ -4,6 +4,10 @@ target/
 
 # ROMs.
 *.ch8
+*.BytePusher
+
+# Running scripts.
+run.*
 
 # Logs
 *.log
