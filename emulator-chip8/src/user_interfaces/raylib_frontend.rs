@@ -1,7 +1,7 @@
 use std::mem::transmute;
 use raylib::{prelude::*, consts::KeyboardKey};
 
-use crate::Frontend;
+use crate::Emulator;
 
 use serde_json::Value;
 
@@ -97,11 +97,8 @@ impl RaylibFrontend
     {
         self.quit = true;
     }
-}
 
-impl Frontend for RaylibFrontend
-{
-    fn update(&mut self, emulator:&mut crate::Emulator, _delta: f64)
+    pub fn update(&mut self, emulator:&mut Emulator, _delta: f64)
     {
         if !emulator.is_running()
         {
@@ -123,7 +120,7 @@ impl Frontend for RaylibFrontend
         }
     }
 
-    fn draw(&mut self, emulator:&mut crate::Emulator)
+    pub fn draw(&mut self, emulator:&mut Emulator)
     {
         if !emulator.get_draw_flag() || self.quit
         {
@@ -158,7 +155,7 @@ impl Frontend for RaylibFrontend
     }
 
     #[inline]
-    fn has_quit(&self) -> bool
+    pub fn has_quit(&self) -> bool
     {
         return self.quit && !self.internals.0.window_should_close();
     }

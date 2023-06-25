@@ -4,13 +4,13 @@ use env_logger::{Builder, Env, Target};
 use std::fs::OpenOptions;
 
 use emulator_chip8 as CHIP8;
-use CHIP8::Frontend as Frontend;
+use emulator_bytepusher as BYTEPUSHER;
 
 mod delta_timer;
 use delta_timer::DeltaTimer;
 
 extern crate serde_json;
-use serde_json::{Value};
+use serde_json::Value;
 
 fn setup_logging(extensive_logging: bool)
 {
@@ -28,6 +28,31 @@ fn setup_logging(extensive_logging: bool)
     Builder::from_env(env).target(Target::Pipe(Box::new(file))).init();
 }
 
+fn setup_bytepusher(platform: &Value)
+{
+    // Setup emulator.
+    let config = BYTEPUSHER::Configs::EmulatorConfig::from_json(&platform["backend_config"]);
+    let mut emulator = BYTEPUSHER::Emulator::new(&config);
+    emulator.load(platform["rom"].as_str().unwrap_or("none"));
+
+    info!("Emulator backend setup completed successfully.");
+
+    // UI setup.
+    let mut delta_timer = DeltaTimer::new();
+    let ui_config = BYTEPUSHER::RaylibFrontendConfig::from_json(&platform["frontend_config"]);
+    let mut user_interface = BYTEPUSHER::RaylibFrontend::new(&ui_config);
+
+    while !user_interface.has_quit()
+    {
+        delta_timer.update();
+
+        user_interface.update(&mut emulator, delta_timer.get());
+        emulator.update(delta_timer.get());
+        
+        user_interface.draw(&mut emulator);
+    }
+}
+
 fn setup_chip8(platform: &Value)
 {
     // Setup emulator.
@@ -43,8 +68,8 @@ fn setup_chip8(platform: &Value)
     {
         "terminal" => {
             
-            let ui_config = CHIP8::Frontends::TerminalFrontendConfig::from_json(&platform["frontend_config"]);
-            let mut user_interface = CHIP8::Frontends::TerminalFrontend::new(&ui_config);
+            let ui_config = CHIP8::TerminalFrontendConfig::from_json(&platform["frontend_config"]);
+            let mut user_interface = CHIP8::TerminalFrontend::new(&ui_config);
 
             while !user_interface.has_quit()
             {
@@ -59,8 +84,8 @@ fn setup_chip8(platform: &Value)
 
         "raylib" => {
 
-            let ui_config = CHIP8::Frontends::RaylibFrontendConfig::from_json(&platform["frontend_config"]);
-            let mut user_interface = CHIP8::Frontends::RaylibFrontend::new(&ui_config);
+            let ui_config = CHIP8::RaylibFrontendConfig::from_json(&platform["frontend_config"]);
+            let mut user_interface = CHIP8::RaylibFrontend::new(&ui_config);
 
             while !user_interface.has_quit()
             {
@@ -83,10 +108,14 @@ fn setup_chip8(platform: &Value)
 
 fn setup_emulator(platform: &Value)
 {
-    let name = platform["name"].as_str().unwrap_or("none");
+    let name = platform["name"].as_str().unwrap_or("none").to_uppercase();
 
-    match name
+    match name.as_str()
     {
+        "BYTEPUSHER" => {
+            setup_bytepusher(platform);
+        },
+
         "CHIP8" => {
             setup_chip8(platform);
         },

@@ -2,10 +2,10 @@ mod system;
 pub use system::configs as Configs;
 pub use system::components as Components;
 
-mod user_interfaces;
-pub use user_interfaces::{RaylibFrontend, RaylibFrontendConfig, TerminalFrontend, TerminalFrontendConfig};
-
 use std::io::Read;
+
+mod user_interfaces;
+pub use user_interfaces::{RaylibFrontend, RaylibFrontendConfig};
 
 extern crate pretty_env_logger;
 #[macro_use] extern crate log;
@@ -14,7 +14,6 @@ pub struct Emulator
 {
     cpu: Components::CPU,
     ram: Components::RAM,
-    display: Components::Display,
     keyboard: Components::Keyboard,
     sound: Components::Timer,
     delta: Components::Timer,
@@ -27,12 +26,10 @@ impl Emulator
         let mut result = Self {
             cpu: Components::CPU::new(&config.cpu_config),
             ram: Components::RAM::new(&config.ram_config),
-            display: Components::Display::new(&config.display_config),
             keyboard: Components::Keyboard::new(),
             sound: Components::Timer::new(&config.sound_timer_config),
             delta: Components::Timer::new(&config.delta_timer_config)
         };
-        result.cpu.set_pc(config.ram_config.start as u16);
         return result;
     }
 
@@ -40,18 +37,6 @@ impl Emulator
     pub fn get_sound_timer(&self) -> u8
     {
         return self.sound.get();
-    }
-
-    #[inline]
-    pub fn get_draw_flag(&self) -> bool
-    {
-        self.display.get_flag()
-    }
-
-    #[inline]
-    pub fn reset_draw_flag(&mut self)
-    {
-        self.display.reset_flag();
     }
 
     #[inline]
@@ -97,21 +82,21 @@ impl Emulator
     }
 
     #[inline]
-    pub fn get_display_width(&self) -> u8
+    pub fn get_display_width(&self) -> usize
     {
-        return self.display.get_width();
+        return 256;
     }
 
     #[inline]
-    pub fn get_display_height(&self) -> u8
+    pub fn get_display_height(&self) -> usize
     {
-        return self.display.get_height();
+        return 256;
     }
 
     #[inline]
-    pub fn get_display_pixel(&self, x: u8, y: u8) -> bool
+    pub fn get_display_pixel(&self, x: u8, y: u8) -> u32
     {
-        return self.display.get_pixel(x, y);
+        return 0;
     }
 
     // Updates the emulator state by the given ammount of seconds.
@@ -126,7 +111,7 @@ impl Emulator
         self.sound.update(delta);
         self.delta.update(delta);
         
-        self.cpu.update(&mut self.ram, &mut self.display, &mut self.keyboard, &mut self.delta, &mut self.sound, delta);
+        self.cpu.update(&mut self.ram, &mut self.keyboard, &mut self.delta, &mut self.sound, delta);
     }
 
 }

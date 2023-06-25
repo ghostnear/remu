@@ -1,8 +1,6 @@
 use std::io::{stdout, Write};
 use std::time::Duration;
 
-use crate::Frontend;
-
 use serde_json::Value;
 
 use crossterm::{
@@ -12,6 +10,8 @@ use crossterm::{
     cursor,
     event::{poll, read, Event, KeyCode, KeyEventKind, KeyModifiers, PushKeyboardEnhancementFlags, PopKeyboardEnhancementFlags, KeyboardEnhancementFlags}
 };
+
+use crate::Emulator;
 
 pub struct TerminalFrontendConfig
 {
@@ -124,11 +124,8 @@ impl TerminalFrontend
             PopKeyboardEnhancementFlags,
         ).unwrap();
     }
-}
 
-impl Frontend for TerminalFrontend
-{
-    fn update(&mut self, emulator:&mut crate::Emulator, _delta: f64)
+    pub fn update(&mut self, emulator:&mut Emulator, _delta: f64)
     {
         if !emulator.is_running()
         {
@@ -177,7 +174,7 @@ impl Frontend for TerminalFrontend
         }
     }
 
-    fn draw(&mut self, emulator:&mut crate::Emulator)
+    pub fn draw(&mut self, emulator:&mut Emulator)
     {
         if !emulator.get_draw_flag() || self.quit
         {
@@ -231,7 +228,7 @@ impl Frontend for TerminalFrontend
     }
 
     #[inline]
-    fn has_quit(&self) -> bool
+    pub fn has_quit(&self) -> bool
     {
         return self.quit;
     }

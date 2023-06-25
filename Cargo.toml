@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    "emulator-common",
     "emulator-app",
     "emulator-chip8",
+    "emulator-bytepusher"
 ]
