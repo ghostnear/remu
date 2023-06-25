@@ -10,7 +10,7 @@ mod delta_timer;
 use delta_timer::DeltaTimer;
 
 extern crate serde_json;
-use serde_json::Value;
+use serde_json::{Value};
 
 fn setup_logging(extensive_logging: bool)
 {
@@ -46,7 +46,6 @@ fn setup_chip8(platform: &Value)
             let ui_config = CHIP8::Frontends::TerminalFrontendConfig::from_json(&platform["frontend_config"]);
             let mut user_interface = CHIP8::Frontends::TerminalFrontend::new(&ui_config);
 
-            // Main loop of the app.
             while !user_interface.has_quit()
             {
                 delta_timer.update();
@@ -56,6 +55,23 @@ fn setup_chip8(platform: &Value)
                 
                 user_interface.draw(&mut emulator);
             }
+        },
+
+        "raylib" => {
+
+            let ui_config = CHIP8::Frontends::RaylibFrontendConfig::from_json(&platform["frontend_config"]);
+            let mut user_interface = CHIP8::Frontends::RaylibFrontend::new(&ui_config);
+
+            while !user_interface.has_quit()
+            {
+                delta_timer.update();
+
+                user_interface.update(&mut emulator, delta_timer.get());
+                emulator.update(delta_timer.get());
+                
+                user_interface.draw(&mut emulator);
+            }
+
         },
         
         _ => {

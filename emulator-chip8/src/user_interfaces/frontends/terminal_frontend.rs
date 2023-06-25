@@ -62,7 +62,7 @@ impl TerminalFrontendConfig
         for index in 0..0x10
         {
             result.bindings[index] = (
-                KeyCode::Char(keys[index].as_str().unwrap_or("0").chars().next().unwrap_or('0')),
+                KeyCode::Char(keys[index].as_str().unwrap_or("").chars().next().unwrap_or('\0')),
                 match modifiers[index].as_str().unwrap_or("NONE")
                 {
                     "NONE" => KeyModifiers::NONE,
@@ -73,6 +73,8 @@ impl TerminalFrontendConfig
                 }
             );
         }
+
+        info!("Terminal frontend config loaded successfully from JSON data.");
 
         return result;
     }
@@ -99,6 +101,8 @@ impl TerminalFrontend
         ).unwrap();
 
         enable_raw_mode().unwrap();
+
+        info!("Terminal frontend initialized successfully.");
 
         Self {
             foreground: config.foreground,
@@ -175,7 +179,7 @@ impl Frontend for TerminalFrontend
 
     fn draw(&mut self, emulator:&mut crate::Emulator)
     {
-        if !emulator.get_draw_flag()
+        if !emulator.get_draw_flag() || self.quit
         {
             return;
         }
