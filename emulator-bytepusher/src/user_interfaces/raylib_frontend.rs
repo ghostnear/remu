@@ -55,13 +55,6 @@ impl RaylibFrontend
 
     pub fn update(&mut self, emulator: &mut Emulator, _delta: f64)
     {
-        if !emulator.is_running()
-        {
-            info!("Backend has stopped running, closing app...");
-            self.exit();
-            return;
-        }
-
         // TODO: updating here.
     }
 

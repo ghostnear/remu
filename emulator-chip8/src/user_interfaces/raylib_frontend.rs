@@ -71,7 +71,6 @@ pub struct RaylibFrontend
     background: Color,
     output: RenderTexture2D,
     internals: (raylib::RaylibHandle, raylib::RaylibThread),
-    quit: bool,
     bindings: Vec<KeyboardKey>
 }
 
@@ -87,7 +86,6 @@ impl RaylibFrontend
             foreground: config.foreground,
             background: config.background,
             output: output_texture,
-            quit: false,
             internals: result_internals,
             bindings: config.bindings.clone()
         };
@@ -99,20 +97,8 @@ impl RaylibFrontend
         return result;
     }
 
-    fn exit(&mut self)
-    {
-        self.quit = true;
-    }
-
     pub fn update(&mut self, emulator:&mut Emulator, _delta: f64)
     {
-        if !emulator.is_running()
-        {
-            info!("Backend has stopped running, closing app...");
-            self.exit();
-            return;
-        }
-
         for index in 0..0x10 as u8
         {
             if self.internals.0.is_key_down(self.bindings[index as usize])
@@ -128,7 +114,7 @@ impl RaylibFrontend
 
     pub fn draw(&mut self, emulator:&mut Emulator)
     {
-        if !emulator.get_draw_flag() || self.quit
+        if !emulator.get_draw_flag()
         {
             return;
         }
@@ -170,6 +156,6 @@ impl RaylibFrontend
     #[inline]
     pub fn has_quit(&self) -> bool
     {
-        return self.quit && !self.internals.0.window_should_close();
+        return self.internals.0.window_should_close();
     }
 }

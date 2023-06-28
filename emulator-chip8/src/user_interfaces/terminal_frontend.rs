@@ -127,13 +127,6 @@ impl TerminalFrontend
 
     pub fn update(&mut self, emulator:&mut Emulator, _delta: f64)
     {
-        if !emulator.is_running()
-        {
-            info!("Backend has stopped running, closing app...");
-            self.exit();
-            return;
-        }
-
         if emulator.get_sound_timer() > 0
         {
             print!("{}", '\x07');
