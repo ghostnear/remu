@@ -69,6 +69,7 @@ pub struct RaylibFrontend
 {
     foreground: Color,
     background: Color,
+    output: RenderTexture2D,
     internals: (raylib::RaylibHandle, raylib::RaylibThread),
     quit: bool,
     bindings: Vec<KeyboardKey>
@@ -78,15 +79,20 @@ impl RaylibFrontend
 {
     pub fn new(config: &RaylibFrontendConfig) -> Self
     {
-        let mut result =Self {
+        let mut result_internals = raylib::init().size(1080, 580).title("remu CHIP8").build();
+
+        let output_texture = result_internals.0.load_render_texture(&result_internals.1, 64,32).unwrap();
+
+        let mut result = Self {
             foreground: config.foreground,
             background: config.background,
+            output: output_texture,
             quit: false,
-            internals: raylib::init().size(1080, 580).title("remu CHIP8").build(),
+            internals: result_internals,
             bindings: config.bindings.clone()
         };
 
-        info!("Raylib frontend initialized successfully.");
+        info!("Raylib CHIP8 frontend initialized successfully.");
 
         result.internals.0.set_exit_key(Some(KeyboardKey::KEY_ESCAPE));
 
@@ -127,31 +133,38 @@ impl RaylibFrontend
             return;
         }
 
-        let mut drawing_context = self.internals.0.begin_drawing(&self.internals.1);
-
-        drawing_context.clear_background(self.background);
-
-        let scale = (
-            drawing_context.get_screen_width() as f32 / emulator.get_display_width() as f32,
-            drawing_context.get_screen_height() as f32 / emulator.get_display_height() as f32
-        );
+        let mut binding = &mut self.internals.0;
+        let mut output_context = binding.begin_texture_mode(&self.internals.1, &mut self.output);
 
         for y in 0..emulator.get_display_height()
         {
             for x in 0..emulator.get_display_width()
             {
+                let mut resulting_color = self.background;
+
                 if emulator.get_display_pixel(x, y)
                 {
-                    drawing_context.draw_rectangle(
-                        (x as f32 * scale.0) as i32,
-                        (y as f32 * scale.1) as i32,
-                        scale.0 as i32 + 1,
-                        scale.1 as i32 + 1,
-                        self.foreground
-                    );
+                    resulting_color = self.foreground;
                 }
+
+                output_context.draw_pixel(x as i32, (emulator.get_display_height() - (y + 1)) as i32, resulting_color);
             }
         }
+
+        drop(output_context);
+
+        let mut screen_context = self.internals.0.begin_drawing(&self.internals.1);
+
+        screen_context.draw_texture_pro(
+            &self.output,
+            Rectangle::new(0.0, 0.0, 64.0, 32.0),
+            Rectangle::new(0.0, 0.0, screen_context.get_screen_width() as f32, screen_context.get_screen_height() as f32),
+            Vector2::default(),
+            0.0,
+            Color::WHITE
+        );
+
+        drop(screen_context);
     }
 
     #[inline]

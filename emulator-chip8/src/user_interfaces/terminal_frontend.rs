@@ -102,7 +102,7 @@ impl TerminalFrontend
 
         enable_raw_mode().unwrap();
 
-        info!("Terminal frontend initialized successfully.");
+        info!("Terminal CHIP8 frontend initialized successfully.");
 
         Self {
             foreground: config.foreground,
