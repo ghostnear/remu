@@ -17,39 +17,39 @@ impl RAM
     }
 
     #[inline]
-    pub fn read_byte(&self, address: usize) -> u8
+    pub fn read_byte(&self, address: u32) -> u8
     {
-        if address >= self.size
+        if address >= self.size as u32
         {
             error!("Attempted to read byte from invalid address: {:#04X}", address);
             panic!("Attempted to read byte from invalid address: {:#04X}", address);
         }
 
-        return self.memory[address];
+        return self.memory[address as usize];
     }
 
     #[inline]
-    pub fn write_byte(&mut self, address: usize, value: u8)
+    pub fn write_byte(&mut self, address: u32, value: u8)
     {
-        if address >= self.size
+        if address >= self.size as u32
         {
             error!("Attempted to write byte to invalid address: {:#04X}", address);
             panic!("Attempted to write byte to invalid address: {:#04X}", address);
         }
 
-        self.memory[address] = value;
+        self.memory[address as usize] = value;
     }
 
     #[inline]
-    pub fn read_word(&self, address: u16) -> u16
+    pub fn read_triple_byte(&self, address: u32) -> u32
     {
-        if address >= (self.size - 1) as u16
+        if address >= (self.size - 2) as u32
         {
-            error!("Attempted to read word from invalid address: {:#04X}", address);
-            panic!("Attempted to read word from invalid address: {:#04X}", address);
+            error!("Attempted to read triple byte from invalid address: {:#04X}", address);
+            panic!("Attempted to read triple byte from invalid address: {:#04X}", address);
         }
 
-        return (self.memory[address as usize] as u16) << 8 | (self.memory[(address + 1) as usize] as u16);
+        return (self.memory[address as usize] as u32) << 16 | (self.memory[(address + 1) as usize] as u32) << 8 | (self.memory[(address + 2) as usize] as u32);
     }
 
     pub fn load_rom_data(&mut self, data: &[u8])

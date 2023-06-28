@@ -1,4 +1,4 @@
-use raylib::consts::KeyboardKey;
+use raylib::{consts::KeyboardKey, prelude::*, color::Color};
 
 use serde_json::Value;
 
@@ -28,8 +28,7 @@ impl RaylibFrontendConfig
 
 pub struct RaylibFrontend
 {
-    internals: (raylib::RaylibHandle, raylib::RaylibThread),
-    quit: bool
+    internals: (raylib::RaylibHandle, raylib::RaylibThread)
 }
 
 impl RaylibFrontend
@@ -37,7 +36,6 @@ impl RaylibFrontend
     pub fn new(config: &RaylibFrontendConfig) -> Self
     {
         let mut result = Self {
-            quit: false,
             internals: raylib::init().size(1080, 580).title("remu BytePusher").build(),
         };
 
@@ -48,11 +46,6 @@ impl RaylibFrontend
         return result;
     }
 
-    fn exit(&mut self)
-    {
-        self.quit = true;
-    }
-
     pub fn update(&mut self, emulator: &mut Emulator, _delta: f64)
     {
         // TODO: updating here.
@@ -60,19 +53,14 @@ impl RaylibFrontend
 
     pub fn draw(&mut self, emulator: &mut Emulator)
     {
-        if self.quit
-        {
-            return;
-        }
+        let mut drawing_context = self.internals.0.begin_drawing(&self.internals.1);
 
-        let drawing_context = self.internals.0.begin_drawing(&self.internals.1);
-
-        // TODO: drawing here.
+        drawing_context.clear_background(Color::BLACK);
     }
 
     #[inline]
     pub fn has_quit(&self) -> bool
     {
-        return self.quit && !self.internals.0.window_should_close();
+        return self.internals.0.window_should_close();
     }
 }

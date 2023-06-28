@@ -2,11 +2,9 @@ use crate::{Configs, Components};
 
 pub struct CPU
 {
-    pc: u16,
+    pc: u32,
 
     halt_flag: bool,
-
-    vsync: Components::Timer,
 
     timer: Components::Timer
 }
@@ -18,9 +16,6 @@ impl CPU
         Self {
             pc: 0,
             timer: Components::Timer::new(&config.timer),
-            vsync: Components::Timer::new(&Configs::TimerConfig {
-                rate: 60.0
-            }),
             halt_flag: false
         }
     }
@@ -32,21 +27,28 @@ impl CPU
     }
     
     #[inline]
-    pub fn step(&mut self, ram: &mut Components::RAM, keyboard: &mut Components::Keyboard, delta: &mut Components::Timer, sound: &mut Components::Timer)
+    pub fn step(&mut self, ram: &mut Components::RAM)
     {
-        
+        self.pc = ram.read_triple_byte(2);
+
+        for _ in 0..65536
+        {
+            ram.write_byte(ram.read_triple_byte(self.pc + 3), ram.read_byte(self.pc));
+            self.pc = ram.read_triple_byte(self.pc + 6);
+        }
     }
 
-    pub fn update(&mut self, ram: &mut Components::RAM, keyboard: &mut Components::Keyboard, delta_timer: &mut Components::Timer, sound_timer: &mut Components::Timer, delta: f64)
+    pub fn update(&mut self, ram: &mut Components::RAM, keyboard: &mut Components::Keyboard, delta: f64)
     {
         self.timer.update(delta);
-        self.vsync.update(delta);
         
         // We are ready to execute the opcode.
         if self.timer.get() == 0
         {
             self.timer.set(1);
-            self.step(ram, keyboard, delta_timer, sound_timer);
+            self.step(ram);
+
+            trace!("Stepeed CPU.");
         }
     }
 

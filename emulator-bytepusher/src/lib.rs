@@ -15,7 +15,6 @@ pub struct Emulator
     cpu: Components::CPU,
     ram: Components::RAM,
     keyboard: Components::Keyboard,
-    sound: Components::Timer,
     delta: Components::Timer,
 }
 
@@ -23,20 +22,12 @@ impl Emulator
 {
     pub fn new(config: &Configs::EmulatorConfig) -> Self
     {
-        let mut result = Self {
+        Self {
             cpu: Components::CPU::new(&config.cpu_config),
             ram: Components::RAM::new(&config.ram_config),
             keyboard: Components::Keyboard::new(),
-            sound: Components::Timer::new(&config.sound_timer_config),
             delta: Components::Timer::new(&config.delta_timer_config)
-        };
-        return result;
-    }
-
-    #[inline]
-    pub fn get_sound_timer(&self) -> u8
-    {
-        return self.sound.get();
+        }
     }
 
     #[inline]
@@ -108,10 +99,9 @@ impl Emulator
             return;
         }
 
-        self.sound.update(delta);
         self.delta.update(delta);
         
-        self.cpu.update(&mut self.ram, &mut self.keyboard, &mut self.delta, &mut self.sound, delta);
+        self.cpu.update(&mut self.ram, &mut self.keyboard, delta);
     }
 
 }
