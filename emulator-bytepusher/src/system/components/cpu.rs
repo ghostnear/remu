@@ -33,12 +33,12 @@ impl CPU
 
         for _ in 0..65536
         {
-            ram.write_byte(ram.read_triple_byte(self.pc + 3), ram.read_byte(self.pc));
+            ram.write_byte(ram.read_triple_byte(self.pc + 3), ram.read_byte(ram.read_triple_byte(self.pc)));
             self.pc = ram.read_triple_byte(self.pc + 6);
         }
     }
 
-    pub fn update(&mut self, ram: &mut Components::RAM, keyboard: &mut Components::Keyboard, delta: f64)
+    pub fn update(&mut self, ram: &mut Components::RAM, _keyboard: &mut Components::Keyboard, delta: f64)
     {
         self.timer.update(delta);
         
@@ -47,8 +47,6 @@ impl CPU
         {
             self.timer.set(1);
             self.step(ram);
-
-            trace!("Stepeed CPU.");
         }
     }
 

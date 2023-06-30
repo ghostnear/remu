@@ -3,9 +3,7 @@ use serde_json::Value;
 pub struct EmulatorConfig
 {
     pub ram_config: RAMConfig,
-    pub cpu_config: CPUConfig,
-    pub sound_timer_config: TimerConfig,
-    pub delta_timer_config: TimerConfig
+    pub cpu_config: CPUConfig
 }
 
 impl EmulatorConfig
@@ -14,22 +12,13 @@ impl EmulatorConfig
     {
         Self {
             ram_config: RAMConfig::default(),
-            cpu_config: CPUConfig::default(),
-            sound_timer_config: TimerConfig {
-                rate: 60.0
-            },
-            delta_timer_config: TimerConfig {
-                rate: 60.0
-            }
+            cpu_config: CPUConfig::default()
         }
     }
 
-    pub fn from_json(data: &Value) -> Self
+    pub fn from_json(_data: &Value) -> Self
     {
-        let mut result = Self::default();
-
-        // Change the defaults if they are changed in the config.
-        result.cpu_config.timer.rate = data["instruction_rate"].as_f64().unwrap_or(result.cpu_config.timer.rate);
+        let result = Self::default();
 
         return result;
     }
@@ -46,7 +35,7 @@ impl CPUConfig
     {
         Self {
             timer: TimerConfig {
-                rate: 60.0
+                rate: 30.0
             }
         }
     }

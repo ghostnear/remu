@@ -80,12 +80,10 @@ impl RaylibFrontend
     {
         let mut result_internals = raylib::init().size(1080, 580).title("remu CHIP8").build();
 
-        let output_texture = result_internals.0.load_render_texture(&result_internals.1, 64,32).unwrap();
-
         let mut result = Self {
             foreground: config.foreground,
             background: config.background,
-            output: output_texture,
+            output: result_internals.0.load_render_texture(&result_internals.1, 64,32).unwrap(),
             internals: result_internals,
             bindings: config.bindings.clone()
         };

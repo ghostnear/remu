@@ -14,8 +14,7 @@ pub struct Emulator
 {
     cpu: Components::CPU,
     ram: Components::RAM,
-    keyboard: Components::Keyboard,
-    delta: Components::Timer,
+    keyboard: Components::Keyboard
 }
 
 impl Emulator
@@ -25,8 +24,7 @@ impl Emulator
         Self {
             cpu: Components::CPU::new(&config.cpu_config),
             ram: Components::RAM::new(&config.ram_config),
-            keyboard: Components::Keyboard::new(),
-            delta: Components::Timer::new(&config.delta_timer_config)
+            keyboard: Components::Keyboard::new()
         }
     }
 
@@ -85,9 +83,11 @@ impl Emulator
     }
 
     #[inline]
-    pub fn get_display_pixel(&self, x: u8, y: u8) -> u32
+    pub fn get_display_pixel(&self, x: usize, y: usize) -> u32
     {
-        return 0;
+        let address = ((self.ram.read_byte(5) as usize) << 16) | (y << 8) as usize | x as usize;
+
+        return self.ram.get_color_value(self.ram.read_byte(address as u32));
     }
 
     // Updates the emulator state by the given ammount of seconds.
@@ -98,9 +98,6 @@ impl Emulator
         {
             return;
         }
-
-        self.delta.update(delta);
-        
         self.cpu.update(&mut self.ram, &mut self.keyboard, delta);
     }
 

@@ -3,17 +3,41 @@ use crate::Configs;
 pub struct RAM
 {
     size: usize,
-    memory: Vec<u8>
+    memory: Vec<u8>,
+    colormap: Vec<u32>
 }
 
 impl RAM
 {
     pub fn new(config: &Configs::RAMConfig) -> Self
     {
+        let mut colormap = vec![0; 256];
+
+        for index in 0..256
+        {
+            colormap[index as usize] = match index {
+                0..=215 => {
+                    let r = (index as u32 / 36) * 0x33;
+                    let g = ((index as u32 / 6) % 6) * 0x33;
+                    let b = (index as u32 % 6) * 0x33;
+                    
+                    r << 16 | g << 8 | b
+                }
+                _ => 0,
+            }
+        }
+
         Self {
             size: config.size,
-            memory: vec![0; config.size]
+            memory: vec![0; config.size],
+            colormap: colormap
         }
+    }
+
+    #[inline]
+    pub fn get_color_value(&self, index: u8) -> u32
+    {
+        return self.colormap[index as usize];
     }
 
     #[inline]

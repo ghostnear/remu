@@ -1,6 +1,8 @@
-# Yet another Rust emulator.
+# remu
 
-Started this as a way to learn Rust, and it's proving to be quite a fun venture.
+Yet another emulator written in Rust.
+
+Started this as a way to learn the language, and it's proving to be quite a fun venture.
 
 ## Platform-specific info:
 
