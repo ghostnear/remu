@@ -35,16 +35,28 @@ impl GenericTimer
     {
         self.timer += delta;
 
-        let period = 1.0f64 / (self.rate * 1.0);
+        let rate = self.rate();
 
-        if self.timer >= period
+        if self.timer >= rate
         {
-            self.timer -= period;
+            self.timer -= rate;
             if self.value > 0
             {
                 self.value -= 1;
             }
         }
+    }
+
+    #[inline]
+    pub fn rate(&self) -> f64
+    {
+        return 1.0f64 / (self.rate * 1.0);
+    }
+
+    #[inline]
+    pub fn passed(&self) -> f64
+    {
+        return self.timer;
     }
 
     #[inline]

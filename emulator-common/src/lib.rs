@@ -3,3 +3,6 @@ pub use generic_timer::{ GenericTimer, GenericTimerConfig };
 
 mod delta_timer;
 pub use delta_timer::DeltaTimer;
+
+mod maths;
+pub use maths::clamp;

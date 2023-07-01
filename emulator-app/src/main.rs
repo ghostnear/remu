@@ -1,18 +1,14 @@
 extern crate env_logger;
 #[macro_use] extern crate log;
-use env_logger::{Builder, Env, Target};
-use std::fs::OpenOptions;
-
-use emulator_chip8 as CHIP8;
-use emulator_bytepusher as BYTEPUSHER;
-
-use emulator_common::DeltaTimer;
 
 extern crate serde_json;
 use serde_json::Value;
 
 fn setup_logging(extensive_logging: bool)
 {
+    use env_logger::{Builder, Env, Target};
+    use std::fs::OpenOptions;
+
     let mut log_level = "trace";
     if !extensive_logging
     {
@@ -26,6 +22,10 @@ fn setup_logging(extensive_logging: bool)
     let file = OpenOptions::new().create(true).write(true).truncate(true).open("last.log").unwrap();
     Builder::from_env(env).target(Target::Pipe(Box::new(file))).init();
 }
+
+use emulator_chip8 as CHIP8;
+use emulator_bytepusher as BYTEPUSHER;
+use emulator_common::DeltaTimer;
 
 fn setup_bytepusher(platform: &Value)
 {

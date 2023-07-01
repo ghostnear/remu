@@ -1,6 +1,6 @@
 use crate::{Configs, Components};
 
-use emulator_common::{GenericTimer, GenericTimerConfig};
+use emulator_common::{GenericTimer, GenericTimerConfig, clamp};
 
 pub struct CPU
 {
@@ -374,6 +374,9 @@ impl CPU
             self.timer.set(1);
             self.step(ram, display, keyboard, delta_timer, sound_timer);
         }
+
+        // Sleep until aproximatelly the next tick.
+        std::thread::sleep(std::time::Duration::from_secs_f64(clamp(self.timer.rate() - self.timer.passed(), 0.0, 1000.0)));
     }
 
 }
