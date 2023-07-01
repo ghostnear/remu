@@ -376,7 +376,7 @@ impl CPU
         }
 
         // Sleep until aproximatelly the next tick.
-        std::thread::sleep(std::time::Duration::from_secs_f64(clamp(self.timer.rate() - self.timer.passed(), 0.0, 1000.0)));
+        std::thread::sleep(std::time::Duration::from_secs_f64(clamp(self.timer.rate() - self.timer.passed(), 0.0, 1.0)));
     }
 
 }
