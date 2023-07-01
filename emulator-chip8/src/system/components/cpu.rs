@@ -1,5 +1,7 @@
 use crate::{Configs, Components};
 
+use emulator_common::{GenericTimer, GenericTimerConfig};
+
 pub struct CPU
 {
     pc: u16,
@@ -12,9 +14,9 @@ pub struct CPU
 
     halt_flag: bool,
 
-    vsync: Components::Timer,
+    vsync: GenericTimer,
 
-    timer: Components::Timer
+    timer: GenericTimer
 }
 
 impl CPU
@@ -27,8 +29,8 @@ impl CPU
             index: 0,
             stack_ptr: 0,
             stack: [0; 16],
-            timer: Components::Timer::new(&config.timer),
-            vsync: Components::Timer::new(&Configs::TimerConfig {
+            timer: GenericTimer::new(&config.timer),
+            vsync: GenericTimer::new(&GenericTimerConfig {
                 rate: 60.0
             }),
             halt_flag: false
@@ -74,7 +76,7 @@ impl CPU
     }
 
     #[inline]
-    pub fn step(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta: &mut Components::Timer, sound: &mut Components::Timer)
+    pub fn step(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta: &mut GenericTimer, sound: &mut GenericTimer)
     {
         let opcode = ram.read_word(self.pc);
         self.pc += 2;
@@ -361,7 +363,7 @@ impl CPU
         }
     }
 
-    pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta_timer: &mut Components::Timer, sound_timer: &mut Components::Timer, delta: f64)
+    pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta_timer: &mut GenericTimer, sound_timer: &mut GenericTimer, delta: f64)
     {
         self.timer.update(delta);
         self.vsync.update(delta);

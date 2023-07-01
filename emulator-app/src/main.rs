@@ -6,8 +6,7 @@ use std::fs::OpenOptions;
 use emulator_chip8 as CHIP8;
 use emulator_bytepusher as BYTEPUSHER;
 
-mod delta_timer;
-use delta_timer::DeltaTimer;
+use emulator_common::DeltaTimer;
 
 extern crate serde_json;
 use serde_json::Value;

@@ -1,12 +1,14 @@
 use crate::{Configs, Components};
 
+use emulator_common::GenericTimer;
+
 pub struct CPU
 {
     pc: u32,
 
     halt_flag: bool,
 
-    timer: Components::Timer
+    timer: GenericTimer
 }
 
 impl CPU
@@ -15,7 +17,7 @@ impl CPU
     {
         Self {
             pc: 0,
-            timer: Components::Timer::new(&config.timer),
+            timer: GenericTimer::new(&config.timer),
             halt_flag: false
         }
     }

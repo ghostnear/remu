@@ -1,15 +1,28 @@
-use crate::Configs;
+pub struct GenericTimerConfig
+{
+    pub rate: f64
+}
 
-pub struct Timer
+impl GenericTimerConfig
+{
+    pub fn default() -> Self
+    {
+        Self {
+            rate: 1.0
+        }
+    }
+}
+
+pub struct GenericTimer
 {
     timer: f64,
     rate: f64,
     value: u8
 }
 
-impl Timer
+impl GenericTimer
 {
-    pub fn new(config: &Configs::TimerConfig) -> Self
+    pub fn new(config: &GenericTimerConfig) -> Self
     {
         Self {
             timer: 0.0,

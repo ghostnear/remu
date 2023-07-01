@@ -1,12 +1,14 @@
 use serde_json::Value;
 
+use emulator_common::GenericTimerConfig;
+
 pub struct EmulatorConfig
 {
     pub ram_config: RAMConfig,
     pub cpu_config: CPUConfig,
     pub display_config: DisplayConfig,
-    pub sound_timer_config: TimerConfig,
-    pub delta_timer_config: TimerConfig
+    pub sound_timer_config: GenericTimerConfig,
+    pub delta_timer_config: GenericTimerConfig
 }
 
 impl EmulatorConfig
@@ -17,10 +19,10 @@ impl EmulatorConfig
             ram_config: RAMConfig::default(),
             cpu_config: CPUConfig::default(),
             display_config: DisplayConfig::default(),
-            sound_timer_config: TimerConfig {
+            sound_timer_config: GenericTimerConfig {
                 rate: 60.0
             },
-            delta_timer_config: TimerConfig {
+            delta_timer_config: GenericTimerConfig {
                 rate: 60.0
             }
         }
@@ -40,7 +42,7 @@ impl EmulatorConfig
 
 pub struct CPUConfig
 {
-    pub timer: TimerConfig
+    pub timer: GenericTimerConfig
 }
 
 impl CPUConfig
@@ -48,7 +50,7 @@ impl CPUConfig
     pub fn default() -> Self
     {
         Self {
-            timer: TimerConfig {
+            timer: GenericTimerConfig {
                 rate: 1000.0
             }
         }
@@ -85,21 +87,6 @@ impl DisplayConfig
         Self {
             width: 64,
             height: 32
-        }
-    }
-}
-
-pub struct TimerConfig
-{
-    pub rate: f64
-}
-
-impl TimerConfig
-{
-    pub fn default() -> Self
-    {
-        Self {
-            rate: 1.0
         }
     }
 }

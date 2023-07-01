@@ -1,5 +1,7 @@
 use serde_json::Value;
 
+use emulator_common::GenericTimerConfig;
+
 pub struct EmulatorConfig
 {
     pub ram_config: RAMConfig,
@@ -26,7 +28,7 @@ impl EmulatorConfig
 
 pub struct CPUConfig
 {
-    pub timer: TimerConfig
+    pub timer: GenericTimerConfig
 }
 
 impl CPUConfig
@@ -34,7 +36,7 @@ impl CPUConfig
     pub fn default() -> Self
     {
         Self {
-            timer: TimerConfig {
+            timer: GenericTimerConfig {
                 rate: 30.0
             }
         }
@@ -52,21 +54,6 @@ impl RAMConfig
     {
         Self {
             size: 0x1000000
-        }
-    }
-}
-
-pub struct TimerConfig
-{
-    pub rate: f64
-}
-
-impl TimerConfig
-{
-    pub fn default() -> Self
-    {
-        Self {
-            rate: 1.0
         }
     }
 }

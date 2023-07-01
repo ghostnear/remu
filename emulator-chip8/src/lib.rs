@@ -5,6 +5,8 @@ pub use system::components as Components;
 mod user_interfaces;
 pub use user_interfaces::{RaylibFrontend, RaylibFrontendConfig, TerminalFrontend, TerminalFrontendConfig};
 
+use emulator_common::GenericTimer;
+
 use std::io::Read;
 
 extern crate pretty_env_logger;
@@ -16,8 +18,8 @@ pub struct Emulator
     ram: Components::RAM,
     display: Components::Display,
     keyboard: Components::Keyboard,
-    sound: Components::Timer,
-    delta: Components::Timer,
+    sound: GenericTimer,
+    delta: GenericTimer,
 }
 
 impl Emulator
@@ -29,8 +31,8 @@ impl Emulator
             ram: Components::RAM::new(&config.ram_config),
             display: Components::Display::new(&config.display_config),
             keyboard: Components::Keyboard::new(),
-            sound: Components::Timer::new(&config.sound_timer_config),
-            delta: Components::Timer::new(&config.delta_timer_config)
+            sound: GenericTimer::new(&config.sound_timer_config),
+            delta: GenericTimer::new(&config.delta_timer_config)
         };
         result.cpu.set_pc(config.ram_config.start as u16);
         return result;
