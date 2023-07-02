@@ -1,4 +1,4 @@
-use emulator_common::{clamp, sleep_seconds_f64, GenericTimer};
+use emulator_common::{clamp, sleep_seconds_f64, GenericDownTimer};
 
 use crate::{Components, Configs};
 
@@ -8,7 +8,7 @@ pub struct CPU
 
 	halt_flag: bool,
 
-	timer: GenericTimer
+	timer: GenericDownTimer
 }
 
 impl CPU
@@ -17,7 +17,7 @@ impl CPU
 	{
 		Self {
 			pc: 0,
-			timer: GenericTimer::new(&config.timer),
+			timer: GenericDownTimer::new(&config.timer),
 			halt_flag: false
 		}
 	}

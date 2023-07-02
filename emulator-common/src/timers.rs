@@ -1,3 +1,5 @@
+use crate::maths::clamp;
+
 pub struct DeltaTimer
 {
 	start: std::time::Instant,
@@ -37,14 +39,14 @@ impl GenericTimerConfig
 	pub fn default() -> Self { Self { rate: 1.0 } }
 }
 
-pub struct GenericTimer
+pub struct GenericDownTimer
 {
 	timer: f64,
 	rate: f64,
-	value: u8
+	value: u64
 }
 
-impl GenericTimer
+impl GenericDownTimer
 {
 	pub fn new(config: &GenericTimerConfig) -> Self
 	{
@@ -78,8 +80,45 @@ impl GenericTimer
 	pub fn passed(&self) -> f64 { return self.timer; }
 
 	#[inline]
-	pub fn set(&mut self, value: u8) { self.value = value; }
+	pub fn set(&mut self, value: u64) { self.value = value; }
 
 	#[inline]
-	pub fn get(&self) -> u8 { return self.value; }
+	pub fn get(&self) -> u64 { return self.value; }
+}
+
+pub struct GenericTimer
+{
+	timer: f64,
+	rate: f64
+}
+
+impl GenericTimer
+{
+	pub fn new(config: &GenericTimerConfig) -> Self
+	{
+		Self {
+			timer: 0.0,
+			rate: config.rate,
+		}
+	}
+
+	#[inline]
+	pub fn update(&mut self, delta: f64)
+	{
+		self.timer += delta;
+	}
+
+	pub fn reset(&mut self)
+	{
+		self.timer = clamp(self.timer - self.rate * self.get_ratio() as f64, 0.0, self.rate);
+	}
+
+	#[inline]
+	pub fn rate(&self) -> f64 { return 1.0f64 / (self.rate * 1.0); }
+
+	#[inline]
+	pub fn passed(&self) -> f64 { return self.timer; }
+
+	#[inline]
+	pub fn get_ratio(&mut self) -> u64 { return (self.timer as f64 / self.rate()) as u64; }
 }

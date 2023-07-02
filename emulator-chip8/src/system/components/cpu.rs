@@ -1,4 +1,4 @@
-use emulator_common::{clamp, sleep_seconds_f64, GenericTimer, GenericTimerConfig};
+use emulator_common::{clamp, sleep_seconds_f64, GenericDownTimer, GenericTimerConfig, GenericTimer};
 
 use crate::{Components, Configs};
 
@@ -14,7 +14,7 @@ pub struct CPU
 
 	halt_flag: bool,
 
-	vsync: GenericTimer,
+	vsync: GenericDownTimer,
 
 	timer: GenericTimer
 }
@@ -30,7 +30,7 @@ impl CPU
 			stack_ptr: 0,
 			stack: [0; 16],
 			timer: GenericTimer::new(&config.timer),
-			vsync: GenericTimer::new(&GenericTimerConfig { rate: 60.0 }),
+			vsync: GenericDownTimer::new(&GenericTimerConfig { rate: 60.0 }),
 			halt_flag: false
 		}
 	}
@@ -73,8 +73,8 @@ impl CPU
 		ram: &mut Components::RAM,
 		display: &mut Components::Display,
 		keyboard: &mut Components::Keyboard,
-		delta: &mut GenericTimer,
-		sound: &mut GenericTimer
+		delta: &mut GenericDownTimer,
+		sound: &mut GenericDownTimer
 	)
 	{
 		let opcode = ram.read_word(self.pc);
@@ -313,7 +313,7 @@ impl CPU
 			// LD Vx, DT
 			(0xF, _, 0x0, 0x7) =>
 			{
-				self.reg[nibbles.1 as usize] = delta.get();
+				self.reg[nibbles.1 as usize] = delta.get() as u8;
 			},
 
 			// KEY Vx
@@ -341,13 +341,13 @@ impl CPU
 			// LD DT, Vx
 			(0xF, _, 0x1, 0x5) =>
 			{
-				delta.set(self.reg[nibbles.1 as usize]);
+				delta.set(self.reg[nibbles.1 as usize] as u64);
 			},
 
 			// LD ST, Vx
 			(0xF, _, 0x1, 0x8) =>
 			{
-				sound.set(self.reg[nibbles.1 as usize]);
+				sound.set(self.reg[nibbles.1 as usize] as u64);
 			},
 
 			// ADD I, Vx
@@ -406,8 +406,8 @@ impl CPU
 		ram: &mut Components::RAM,
 		display: &mut Components::Display,
 		keyboard: &mut Components::Keyboard,
-		delta_timer: &mut GenericTimer,
-		sound_timer: &mut GenericTimer,
+		delta_timer: &mut GenericDownTimer,
+		sound_timer: &mut GenericDownTimer,
 		delta: f64
 	)
 	{
@@ -415,11 +415,11 @@ impl CPU
 		self.vsync.update(delta);
 
 		// We are ready to execute the opcode.
-		if self.timer.get() == 0
+		for _ in 0..self.timer.get_ratio()
 		{
-			self.timer.set(1);
 			self.step(ram, display, keyboard, delta_timer, sound_timer);
 		}
+		self.timer.reset();
 
 		// Sleep until aproximatelly the next tick.
 		sleep_seconds_f64(clamp(self.timer.rate() - self.timer.passed(), 0.0, 1.0));
