@@ -1,13 +1,12 @@
-use crate::{Configs, Components};
+use crate::{Components, Configs};
 
-use emulator_common::{GenericTimer, GenericTimerConfig, clamp};
+use emulator_common::{clamp, sleep_seconds_f64, GenericTimer, GenericTimerConfig};
 
-pub struct CPU
-{
+pub struct CPU {
     pc: u16,
 
     reg: [u8; 16],
-    index : u16,
+    index: u16,
 
     stack_ptr: u8,
     stack: [u16; 16],
@@ -16,13 +15,11 @@ pub struct CPU
 
     vsync: GenericTimer,
 
-    timer: GenericTimer
+    timer: GenericTimer,
 }
 
-impl CPU
-{
-    pub fn new(config: &Configs::CPUConfig) -> Self
-    {
+impl CPU {
+    pub fn new(config: &Configs::CPUConfig) -> Self {
         Self {
             pc: 0,
             reg: [0; 16],
@@ -30,30 +27,24 @@ impl CPU
             stack_ptr: 0,
             stack: [0; 16],
             timer: GenericTimer::new(&config.timer),
-            vsync: GenericTimer::new(&GenericTimerConfig {
-                rate: 60.0
-            }),
-            halt_flag: false
+            vsync: GenericTimer::new(&GenericTimerConfig { rate: 60.0 }),
+            halt_flag: false,
         }
     }
 
     #[inline]
-    pub fn set_pc(&mut self, pc: u16)
-    {
+    pub fn set_pc(&mut self, pc: u16) {
         self.pc = pc;
     }
 
     #[inline]
-    pub fn halted(&self) -> bool
-    {
+    pub fn halted(&self) -> bool {
         return self.halt_flag;
     }
 
     #[inline]
-    pub fn push_stack(&mut self, value: u16)
-    {
-        if self.stack_ptr >= 16
-        {
+    pub fn push_stack(&mut self, value: u16) {
+        if self.stack_ptr >= 16 {
             error!("Stack overflow!");
             panic!("Stack overflow!");
         }
@@ -63,10 +54,8 @@ impl CPU
     }
 
     #[inline]
-    pub fn pop_stack(&mut self) -> u16
-    {
-        if self.stack_ptr == 0
-        {
+    pub fn pop_stack(&mut self) -> u16 {
+        if self.stack_ptr == 0 {
             error!("Stack underflow!");
             panic!("Stack underflow!");
         }
@@ -76,21 +65,26 @@ impl CPU
     }
 
     #[inline]
-    pub fn step(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta: &mut GenericTimer, sound: &mut GenericTimer)
-    {
+    pub fn step(
+        &mut self,
+        ram: &mut Components::RAM,
+        display: &mut Components::Display,
+        keyboard: &mut Components::Keyboard,
+        delta: &mut GenericTimer,
+        sound: &mut GenericTimer,
+    ) {
         let opcode = ram.read_word(self.pc);
         self.pc += 2;
-        
+
         // Split the opcode into nibbles and do the execution.
         let nibbles = (
             (opcode & 0xF000) >> 12,
             (opcode & 0x0F00) >> 8,
             (opcode & 0x00F0) >> 4,
-            (opcode & 0x000F)
+            (opcode & 0x000F),
         );
 
-        match nibbles
-        {
+        match nibbles {
             // CLS
             (0x0, 0x0, 0xE, 0x0) => {
                 display.clear();
@@ -103,8 +97,7 @@ impl CPU
 
             // JP NNN
             (0x1, _, _, _) => {
-                if self.pc - 2 == opcode & 0xFFF
-                {
+                if self.pc - 2 == opcode & 0xFFF {
                     warn!("CPU infinite loop detected, halting...");
                     self.halt_flag = true;
                 }
@@ -120,24 +113,21 @@ impl CPU
 
             // SKP, Vx, KK
             (0x3, _, _, _) => {
-                if self.reg[nibbles.1 as usize] == (opcode & 0xFF) as u8
-                {
+                if self.reg[nibbles.1 as usize] == (opcode & 0xFF) as u8 {
                     self.pc += 2;
                 }
             }
 
             // SKNE, VX, KK
             (0x4, _, _, _) => {
-                if self.reg[nibbles.1 as usize] != (opcode & 0xFF) as u8
-                {
+                if self.reg[nibbles.1 as usize] != (opcode & 0xFF) as u8 {
                     self.pc += 2;
                 }
             }
 
             // SKP, Vx, Vy
             (0x5, _, _, 0x0) => {
-                if self.reg[nibbles.1 as usize] == self.reg[nibbles.2 as usize]
-                {
+                if self.reg[nibbles.1 as usize] == self.reg[nibbles.2 as usize] {
                     self.pc += 2;
                 }
             }
@@ -149,7 +139,8 @@ impl CPU
 
             // ADD Vx, KK
             (0x7, _, _, _) => {
-                self.reg[nibbles.1 as usize] = self.reg[nibbles.1 as usize].wrapping_add((opcode & 0xFF) as u8);
+                self.reg[nibbles.1 as usize] =
+                    self.reg[nibbles.1 as usize].wrapping_add((opcode & 0xFF) as u8);
             }
 
             // LD Vx, Vy
@@ -177,14 +168,16 @@ impl CPU
 
             // ADC, Vx, Vy
             (0x8, _, _, 0x4) => {
-                let (result, overflow) = self.reg[nibbles.1 as usize].overflowing_add(self.reg[nibbles.2 as usize]);
+                let (result, overflow) =
+                    self.reg[nibbles.1 as usize].overflowing_add(self.reg[nibbles.2 as usize]);
                 self.reg[nibbles.1 as usize] = result;
                 self.reg[0xF] = overflow as u8;
             }
 
             // SUBB, Vx, Vy
             (0x8, _, _, 0x5) => {
-                let (result, overflow) = self.reg[nibbles.1 as usize].overflowing_sub(self.reg[nibbles.2 as usize]);
+                let (result, overflow) =
+                    self.reg[nibbles.1 as usize].overflowing_sub(self.reg[nibbles.2 as usize]);
                 self.reg[nibbles.1 as usize] = result;
                 self.reg[0xF] = !overflow as u8;
             }
@@ -198,7 +191,8 @@ impl CPU
 
             // SUBN, Vx, Vy
             (0x8, _, _, 0x7) => {
-                let (result, overflow) = self.reg[nibbles.2 as usize].overflowing_sub(self.reg[nibbles.1 as usize]);
+                let (result, overflow) =
+                    self.reg[nibbles.2 as usize].overflowing_sub(self.reg[nibbles.1 as usize]);
                 self.reg[nibbles.1 as usize] = result;
                 self.reg[0xF] = !overflow as u8;
             }
@@ -212,8 +206,7 @@ impl CPU
 
             // SKNE, Vx, Vy
             (0x9, _, _, 0x0) => {
-                if self.reg[nibbles.1 as usize] != self.reg[nibbles.2 as usize]
-                {
+                if self.reg[nibbles.1 as usize] != self.reg[nibbles.2 as usize] {
                     self.pc += 2;
                 }
             }
@@ -236,12 +229,11 @@ impl CPU
 
             // DRW X, Y, n
             (0xD, _, _, _) => {
-                if self.vsync.get() != 0
-                {
+                if self.vsync.get() != 0 {
                     self.pc -= 2;
                     return;
                 }
-                
+
                 self.vsync.set(1);
                 display.set_flag();
 
@@ -251,13 +243,10 @@ impl CPU
 
                 let mut collision = false;
 
-                for i in 0..n as u8
-                {
+                for i in 0..n as u8 {
                     let byte = ram.read_byte((self.index + i as u16) as usize);
-                    for j in 0..8 as u8
-                    {
-                        if display.set_pixel(x + j, y + i, (byte >> (7 - j)) & 1 == 1)
-                        {
+                    for j in 0..8 as u8 {
+                        if display.set_pixel(x + j, y + i, (byte >> (7 - j)) & 1 == 1) {
                             collision = true;
                         }
                     }
@@ -268,16 +257,14 @@ impl CPU
 
             // SKP Vx
             (0xE, _, 0x9, 0xE) => {
-                if keyboard.is_pressed(self.reg[nibbles.1 as usize])
-                {
+                if keyboard.is_pressed(self.reg[nibbles.1 as usize]) {
                     self.pc += 2;
                 }
             }
 
             // SKNP Vx,
             (0xE, _, 0xA, 0x1) => {
-                if !keyboard.is_pressed(self.reg[nibbles.1 as usize])
-                {
+                if !keyboard.is_pressed(self.reg[nibbles.1 as usize]) {
                     self.pc += 2;
                 }
             }
@@ -291,18 +278,15 @@ impl CPU
             (0xF, _, 0x0, 0xA) => {
                 self.pc -= 2;
 
-                for i in 0..16
-                {
-                    if keyboard.is_pressed(i)
-                    {
+                for i in 0..16 {
+                    if keyboard.is_pressed(i) {
                         self.reg[nibbles.1 as usize] = i as u8;
                         keyboard.halt();
                         break;
                     }
                 }
 
-                if keyboard.halted() && !keyboard.is_pressed(self.reg[nibbles.1 as usize])
-                {
+                if keyboard.halted() && !keyboard.is_pressed(self.reg[nibbles.1 as usize]) {
                     keyboard.resume();
                     self.pc += 2;
                 }
@@ -331,8 +315,7 @@ impl CPU
             // LDB, Vx
             (0xF, _, 0x3, 0x3) => {
                 let mut value = self.reg[nibbles.1 as usize];
-                for i in 0..3
-                {
+                for i in 0..3 {
                     ram.write_byte((self.index + 2 - i) as usize, value % 10);
                     value /= 10;
                 }
@@ -340,8 +323,7 @@ impl CPU
 
             // LD, [I], Vx
             (0xF, _, 0x5, 0x5) => {
-                for index in 0..nibbles.1 + 1
-                {
+                for index in 0..nibbles.1 + 1 {
                     ram.write_byte(self.index as usize, self.reg[index as usize]);
                     self.index += 1;
                 }
@@ -349,8 +331,7 @@ impl CPU
 
             // LD, Vx, [I]
             (0xF, _, 0x6, 0x5) => {
-                for index in 0..nibbles.1 + 1
-                {
+                for index in 0..nibbles.1 + 1 {
                     self.reg[index as usize] = ram.read_byte(self.index as usize);
                     self.index += 1;
                 }
@@ -363,20 +344,25 @@ impl CPU
         }
     }
 
-    pub fn update(&mut self, ram: &mut Components::RAM, display: &mut Components::Display, keyboard: &mut Components::Keyboard, delta_timer: &mut GenericTimer, sound_timer: &mut GenericTimer, delta: f64)
-    {
+    pub fn update(
+        &mut self,
+        ram: &mut Components::RAM,
+        display: &mut Components::Display,
+        keyboard: &mut Components::Keyboard,
+        delta_timer: &mut GenericTimer,
+        sound_timer: &mut GenericTimer,
+        delta: f64,
+    ) {
         self.timer.update(delta);
         self.vsync.update(delta);
-        
+
         // We are ready to execute the opcode.
-        if self.timer.get() == 0
-        {
+        if self.timer.get() == 0 {
             self.timer.set(1);
             self.step(ram, display, keyboard, delta_timer, sound_timer);
         }
 
         // Sleep until aproximatelly the next tick.
-        std::thread::sleep(std::time::Duration::from_secs_f64(clamp(self.timer.rate() - self.timer.passed(), 0.0, 1.0)));
+        sleep_seconds_f64(clamp(self.timer.rate() - self.timer.passed(), 0.0, 1.0));
     }
-
 }
