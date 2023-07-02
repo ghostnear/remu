@@ -3,12 +3,12 @@ extern crate env_logger;
 extern crate log;
 
 extern crate serde_json;
+use std::fs::{read_to_string, OpenOptions};
+
 use serde_json::Value;
 
 fn setup_logging(extensive_logging: bool)
 {
-	use std::fs::OpenOptions;
-
 	use env_logger::{Builder, Env, Target};
 
 	let mut log_level = "trace";
@@ -148,8 +148,7 @@ fn main()
 	}
 
 	let config_path = arguments.unwrap();
-	let argument_data =
-		std::fs::read_to_string(config_path.clone()).expect("Could not read config file!");
+	let argument_data = read_to_string(config_path.clone()).expect("Could not read config file!");
 	let json_data: Value = serde_json::from_str(&argument_data).unwrap();
 
 	setup_logging(json_data["extensive_logging"].as_bool().unwrap_or(false));

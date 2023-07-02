@@ -36,6 +36,7 @@ impl RaylibFrontend
 		let mut result_internals = raylib::init()
 			.size(768, 768)
 			.title("remu BytePusher")
+			.vsync()
 			.build();
 
 		let mut result = Self {
