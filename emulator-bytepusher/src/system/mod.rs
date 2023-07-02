@@ -1,2 +1,2 @@
-pub mod configs;
 pub mod components;
+pub mod configs;
