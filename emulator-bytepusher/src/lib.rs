@@ -5,7 +5,7 @@ pub use system::configs as Configs;
 use std::io::Read;
 
 mod user_interfaces;
-pub use user_interfaces::{RaylibFrontend, RaylibFrontendConfig};
+pub use user_interfaces::*;
 
 extern crate pretty_env_logger;
 #[macro_use]

@@ -3,9 +3,7 @@ pub use system::components as Components;
 pub use system::configs as Configs;
 
 mod user_interfaces;
-pub use user_interfaces::{
-    RaylibFrontend, RaylibFrontendConfig, TerminalFrontend, TerminalFrontendConfig,
-};
+pub use user_interfaces::*;
 
 use emulator_common::GenericTimer;
 

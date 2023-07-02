@@ -1,8 +1,8 @@
 mod timers;
-pub use timers::{DeltaTimer, GenericTimer, GenericTimerConfig};
+pub use timers::*;
 
 mod maths;
-pub use maths::clamp;
+pub use maths::*;
 
 #[inline]
 pub fn sleep_seconds_f64(seconds: f64) {
