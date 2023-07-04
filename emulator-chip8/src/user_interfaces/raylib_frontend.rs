@@ -182,8 +182,6 @@ impl RaylibFrontend
 			Color::WHITE
 		);
 
-		screen_context.draw_fps(0, 0);
-
 		drop(screen_context);
 	}
 
