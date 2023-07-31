@@ -36,6 +36,7 @@ impl RaylibFrontend
 		let mut result_internals = raylib::init()
 			.size(768, 768)
 			.title("remu BytePusher")
+			.vsync()
 			.build();
 
 		let mut result = Self {
@@ -56,7 +57,9 @@ impl RaylibFrontend
 		return result;
 	}
 
-	pub fn update(&mut self, emulator: &mut Emulator, delta: f64) { emulator.update(delta); }
+	pub fn update(&mut self, _emulator: &mut Emulator, _delta: f64) {
+		// Nothing for now.
+	}
 
 	pub fn draw(&mut self, emulator: &mut Emulator)
 	{
@@ -99,6 +102,8 @@ impl RaylibFrontend
 			0.0,
 			Color::WHITE
 		);
+
+		screen_context.draw_fps(0, 0);
 
 		drop(screen_context);
 	}

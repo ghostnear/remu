@@ -35,7 +35,7 @@ impl CPUConfig
 	pub fn default() -> Self
 	{
 		Self {
-			timer: GenericTimerConfig { rate: 30.0 }
+			timer: GenericTimerConfig { rate: 60.0 }
 		}
 	}
 }

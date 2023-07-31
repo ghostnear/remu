@@ -50,11 +50,11 @@ impl CPU
 		self.timer.update(delta);
 
 		// We are ready to execute the opcode.
-		if self.timer.get() == 0
+		for _ in 0..self.timer.get_ratio()
 		{
-			self.timer.set(1);
 			self.step(ram);
 		}
+		self.timer.reset();
 
 		// Sleep until aproximatelly the next tick.
 		sleep_seconds_f64(clamp(self.timer.rate() - self.timer.passed(), 0.0, 1.0));

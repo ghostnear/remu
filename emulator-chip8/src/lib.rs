@@ -5,7 +5,7 @@ pub use system::configs as Configs;
 mod user_interfaces;
 use std::io::Read;
 
-use emulator_common::GenericTimer;
+use emulator_common::GenericDownTimer;
 pub use user_interfaces::*;
 
 extern crate pretty_env_logger;
@@ -18,8 +18,8 @@ pub struct Emulator
 	ram: Components::RAM,
 	display: Components::Display,
 	keyboard: Components::Keyboard,
-	sound: GenericTimer,
-	delta: GenericTimer
+	sound: GenericDownTimer,
+	delta: GenericDownTimer
 }
 
 impl Emulator
@@ -31,15 +31,15 @@ impl Emulator
 			ram: Components::RAM::new(&config.ram_config),
 			display: Components::Display::new(&config.display_config),
 			keyboard: Components::Keyboard::new(),
-			sound: GenericTimer::new(&config.sound_timer_config),
-			delta: GenericTimer::new(&config.delta_timer_config)
+			sound: GenericDownTimer::new(&config.sound_timer_config),
+			delta: GenericDownTimer::new(&config.delta_timer_config)
 		};
 		result.cpu.set_pc(config.ram_config.start as u16);
 		return result;
 	}
 
 	#[inline]
-	pub fn get_sound_timer(&self) -> u8 { return self.sound.get(); }
+	pub fn get_sound_timer(&self) -> u8 { return self.sound.get() as u8; }
 
 	#[inline]
 	pub fn get_draw_flag(&self) -> bool { self.display.get_flag() }

@@ -3,7 +3,7 @@
     {
 
         "name": "BytePusher",
-        "rom": "roms/BytePusher/Palette Test.BytePusher",
+        "rom": "roms/BytePusher/Sprites.BytePusher",
 
         "frontend_config":
         {

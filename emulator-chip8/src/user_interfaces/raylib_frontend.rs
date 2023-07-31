@@ -93,7 +93,11 @@ impl RaylibFrontend
 {
 	pub fn new(config: &RaylibFrontendConfig) -> Self
 	{
-		let mut result_internals = raylib::init().size(1080, 580).title("remu CHIP8").build();
+		let mut result_internals = raylib::init()
+			.size(1080, 580)
+			.title("remu CHIP8")
+			.vsync()
+			.build();
 
 		let mut result = Self {
 			foreground: config.foreground,
