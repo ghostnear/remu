@@ -50,7 +50,7 @@ impl CPU
 		self.timer.update(delta);
 
 		// We are ready to execute the opcode.
-		for _ in 0..self.timer.get_ratio()
+		for _ in 0 .. self.timer.get_ratio()
 		{
 			self.step(ram);
 		}

@@ -1,4 +1,6 @@
-use emulator_common::{clamp, sleep_seconds_f64, GenericDownTimer, GenericTimerConfig, GenericTimer};
+use emulator_common::{
+	clamp, sleep_seconds_f64, GenericDownTimer, GenericTimer, GenericTimerConfig
+};
 
 use crate::{Components, Configs};
 
@@ -415,7 +417,7 @@ impl CPU
 		self.vsync.update(delta);
 
 		// We are ready to execute the opcode.
-		for _ in 0..self.timer.get_ratio()
+		for _ in 0 .. self.timer.get_ratio()
 		{
 			self.step(ram, display, keyboard, delta_timer, sound_timer);
 		}

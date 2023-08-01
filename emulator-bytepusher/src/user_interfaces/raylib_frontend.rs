@@ -57,7 +57,8 @@ impl RaylibFrontend
 		return result;
 	}
 
-	pub fn update(&mut self, _emulator: &mut Emulator, _delta: f64) {
+	pub fn update(&mut self, _emulator: &mut Emulator, _delta: f64)
+	{
 		// Nothing for now.
 	}
 

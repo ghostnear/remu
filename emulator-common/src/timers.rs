@@ -98,19 +98,20 @@ impl GenericTimer
 	{
 		Self {
 			timer: 0.0,
-			rate: config.rate,
+			rate: config.rate
 		}
 	}
 
 	#[inline]
-	pub fn update(&mut self, delta: f64)
-	{
-		self.timer += delta;
-	}
+	pub fn update(&mut self, delta: f64) { self.timer += delta; }
 
 	pub fn reset(&mut self)
 	{
-		self.timer = clamp(self.timer - self.rate * self.get_ratio() as f64, 0.0, self.rate);
+		self.timer = clamp(
+			self.timer - self.rate * self.get_ratio() as f64,
+			0.0,
+			self.rate
+		);
 	}
 
 	#[inline]
